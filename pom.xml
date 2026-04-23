@@ -23,6 +23,7 @@
         <swagger.version>2.9.2</swagger.version>
 		<kaptcha.version>2.3.2</kaptcha.version>
         <pagehelper.boot.version>1.3.0</pagehelper.boot.version>
+        <mybatis-plus.version>3.5.1</mybatis-plus.version>
         <fastjson.version>1.2.75</fastjson.version>
         <oshi.version>5.6.0</oshi.version>
         <jna.version>5.7.0</jna.version>
@@ -66,6 +67,31 @@
                 <groupId>com.github.pagehelper</groupId>
                 <artifactId>pagehelper-spring-boot-starter</artifactId>
                 <version>${pagehelper.boot.version}</version>
+            </dependency>
+
+            <!-- MyBatis-Plus -->
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-boot-starter</artifactId>
+                <version>${mybatis-plus.version}</version>
+            </dependency>
+
+            <!-- 锁定版本，覆盖 pagehelper 传递的旧版，与 mybatis-plus 3.5.1 保持一致 -->
+            <dependency>
+                <groupId>org.mybatis</groupId>
+                <artifactId>mybatis</artifactId>
+                <version>3.5.9</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mybatis</groupId>
+                <artifactId>mybatis-spring</artifactId>
+                <version>2.0.7</version>
+            </dependency>
+            <!-- pagehelper 5.1.x 带入 jsqlparser:3.2，MP 3.5.1 的 PaginationInnerInterceptor 需要 4.3+ -->
+            <dependency>
+                <groupId>com.github.jsqlparser</groupId>
+                <artifactId>jsqlparser</artifactId>
+                <version>4.3</version>
             </dependency>
 			
             <!-- 获取系统信息 -->

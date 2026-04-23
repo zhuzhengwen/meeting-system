@@ -88,14 +88,12 @@ token:
     # 令牌有效期（默认30分钟）
     expireTime: 30
   
-# MyBatis配置
-mybatis:
+# MyBatis-Plus配置
+mybatis-plus:
     # 搜索指定包别名
     typeAliasesPackage: com.ruoyi.**.domain
     # 配置mapper的扫描，找到所有的mapper.xml映射文件
     mapperLocations: classpath*:mapper/**/*Mapper.xml
-    # 加载全局的配置文件
-    configLocation: classpath:mybatis/mybatis-config.xml
 
 # PageHelper分页插件
 pagehelper: 
@@ -110,6 +108,30 @@ swagger:
   enabled: true
   # 请求前缀
   pathMapping: /dev-api
+
+# LDAP配置
+ldap:
+  # 是否启用LDAP登录
+  enabled: false
+  # LDAP服务器地址
+  url: ldap://your-ldap-server:389
+  # 搜索根节点
+  base: dc=company,dc=com
+  # 查询用服务账号DN
+  userDn: cn=readonly,dc=company,dc=com
+  # 查询用服务账号密码
+  password: readonly_password
+  # 用户搜索过滤器（AD用sAMAccountName，OpenLDAP用uid）
+  userSearchFilter: (sAMAccountName={0})
+  # LDAP属性映射
+  attrs:
+    department: department
+    displayName: displayName
+    email: mail
+  # 自动创建的LDAP部门挂在哪个父节点下（sys_dept里需存在该节点）
+  defaultDeptParentId: 100
+  # LDAP用户首次登录时自动分配的角色ID（data_scope建议设为3=本部门）
+  defaultRoleId: 2
 
 # 防止XSS攻击
 xss: 

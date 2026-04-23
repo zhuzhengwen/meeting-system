@@ -15,6 +15,7 @@
 		<result property="avatar"       column="avatar"       />
 		<result property="password"     column="password"     />
 		<result property="status"       column="status"       />
+		<result property="loginType"    column="login_type"   />
 		<result property="delFlag"      column="del_flag"     />
 		<result property="loginIp"      column="login_ip"     />
 		<result property="loginDate"    column="login_date"   />
@@ -147,6 +148,7 @@
 		<if test="sex != null and sex != ''">sex,</if>
 		<if test="password != null and password != ''">password,</if>
 		<if test="status != null and status != ''">status,</if>
+		<if test="loginType != null and loginType != ''">login_type,</if>
 		<if test="createBy != null and createBy != ''">create_by,</if>
 		<if test="remark != null and remark != ''">remark,</if>
 		create_time
@@ -161,6 +163,7 @@
 		<if test="sex != null and sex != ''">#{sex},</if>
 		<if test="password != null and password != ''">#{password},</if>
 		<if test="status != null and status != ''">#{status},</if>
+		<if test="loginType != null and loginType != ''">#{loginType},</if>
 		<if test="createBy != null and createBy != ''">#{createBy},</if>
 		<if test="remark != null and remark != ''">#{remark},</if>
 		now()

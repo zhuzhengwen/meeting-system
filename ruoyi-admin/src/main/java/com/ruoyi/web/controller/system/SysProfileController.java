@@ -93,6 +93,10 @@ public class SysProfileController extends BaseController
     public AjaxResult updatePwd(String oldPassword, String newPassword)
     {
         LoginUser loginUser = tokenService.getLoginUser(ServletUtils.getRequest());
+        if ("1".equals(loginUser.getUser().getLoginType()))
+        {
+            return AjaxResult.error("域账号不支持修改密码，请联系域管理员");
+        }
         String userName = loginUser.getUsername();
         String password = loginUser.getPassword();
         if (!SecurityUtils.matchesPassword(oldPassword, password))

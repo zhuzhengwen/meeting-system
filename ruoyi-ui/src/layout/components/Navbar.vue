@@ -8,38 +8,24 @@
     <div class="right-menu">
       <template v-if="device!=='mobile'">
         <search id="header-search" class="right-menu-item" />
-        
-        <el-tooltip content="源码地址" effect="dark" placement="bottom">
-          <ruo-yi-git id="ruoyi-git" class="right-menu-item hover-effect" />
-        </el-tooltip>
-
-        <el-tooltip content="文档地址" effect="dark" placement="bottom">
-          <ruo-yi-doc id="ruoyi-doc" class="right-menu-item hover-effect" />
-        </el-tooltip>
-
         <screenfull id="screenfull" class="right-menu-item hover-effect" />
-
         <el-tooltip content="布局大小" effect="dark" placement="bottom">
           <size-select id="size-select" class="right-menu-item hover-effect" />
         </el-tooltip>
-
       </template>
 
       <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
         <div class="avatar-wrapper">
           <img :src="avatar" class="user-avatar">
+          <span class="user-name">{{ name }}</span>
           <i class="el-icon-caret-bottom" />
         </div>
         <el-dropdown-menu slot="dropdown">
           <router-link to="/user/profile">
-            <el-dropdown-item>个人中心</el-dropdown-item>
+            <el-dropdown-item icon="el-icon-user">个人中心</el-dropdown-item>
           </router-link>
-          <el-dropdown-item @click.native="setting = true">
-            <span>布局设置</span>
-          </el-dropdown-item>
-          <el-dropdown-item divided @click.native="logout">
-            <span>退出登录</span>
-          </el-dropdown-item>
+          <el-dropdown-item icon="el-icon-setting" @click.native="setting = true">布局设置</el-dropdown-item>
+          <el-dropdown-item icon="el-icon-switch-button" divided @click.native="logout">退出登录</el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
     </div>
@@ -54,8 +40,6 @@ import Hamburger from '@/components/Hamburger'
 import Screenfull from '@/components/Screenfull'
 import SizeSelect from '@/components/SizeSelect'
 import Search from '@/components/HeaderSearch'
-import RuoYiGit from '@/components/RuoYi/Git'
-import RuoYiDoc from '@/components/RuoYi/Doc'
 
 export default {
   components: {
@@ -64,14 +48,13 @@ export default {
     Hamburger,
     Screenfull,
     SizeSelect,
-    Search,
-    RuoYiGit,
-    RuoYiDoc
+    Search
   },
   computed: {
     ...mapGetters([
       'sidebar',
       'avatar',
+      'name',
       'device'
     ]),
     setting: {
@@ -124,35 +107,22 @@ export default {
     float: left;
     cursor: pointer;
     transition: background .3s;
-    -webkit-tap-highlight-color:transparent;
-
-    &:hover {
-      background: rgba(0, 0, 0, .025)
-    }
+    -webkit-tap-highlight-color: transparent;
+    &:hover { background: rgba(0,0,0,.025) }
   }
 
-  .breadcrumb-container {
-    float: left;
-  }
+  .breadcrumb-container { float: left; }
 
   .topmenu-container {
     position: absolute;
     left: 50px;
   }
 
-  .errLog-container {
-    display: inline-block;
-    vertical-align: top;
-  }
-
   .right-menu {
     float: right;
     height: 100%;
     line-height: 50px;
-
-    &:focus {
-      outline: none;
-    }
+    &:focus { outline: none; }
 
     .right-menu-item {
       display: inline-block;
@@ -165,33 +135,48 @@ export default {
       &.hover-effect {
         cursor: pointer;
         transition: background .3s;
-
-        &:hover {
-          background: rgba(0, 0, 0, .025)
-        }
+        &:hover { background: rgba(0,0,0,.025) }
       }
     }
 
     .avatar-container {
-      margin-right: 30px;
+      margin-right: 20px;
 
       .avatar-wrapper {
-        margin-top: 5px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        height: 50px;
         position: relative;
 
         .user-avatar {
           cursor: pointer;
-          width: 40px;
-          height: 40px;
-          border-radius: 10px;
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          border: 2px solid #e8f0fe;
+          object-fit: cover;
+          flex-shrink: 0;
+          display: block;
+        }
+
+        .user-name {
+          font-size: 13px;
+          color: #374151;
+          font-weight: 500;
+          cursor: pointer;
+          max-width: 80px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          line-height: 1;
         }
 
         .el-icon-caret-bottom {
           cursor: pointer;
-          position: absolute;
-          right: -20px;
-          top: 25px;
           font-size: 12px;
+          color: #9ca3af;
+          line-height: 1;
         }
       }
     }

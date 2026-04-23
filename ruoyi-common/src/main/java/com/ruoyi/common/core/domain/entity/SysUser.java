@@ -58,6 +58,9 @@ public class SysUser extends BaseEntity
     /** 密码 */
     private String password;
 
+    /** 登录方式（0系统账号 1LDAP账号） */
+    private String loginType;
+
     /** 盐加密 */
     private String salt;
 
@@ -208,6 +211,16 @@ public class SysUser extends BaseEntity
     public void setPassword(String password)
     {
         this.password = password;
+    }
+
+    public String getLoginType()
+    {
+        return loginType;
+    }
+
+    public void setLoginType(String loginType)
+    {
+        this.loginType = loginType;
     }
 
     public String getSalt()

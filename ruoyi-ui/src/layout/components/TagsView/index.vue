@@ -74,12 +74,8 @@ export default {
     isActive(route) {
       return route.path === this.$route.path
     },
-    activeStyle(tag) {
-      if (!this.isActive(tag)) return {};
-      return {
-        "background-color": this.theme,
-        "border-color": this.theme
-      };
+    activeStyle() {
+      return {};
     },
     isAffix(tag) {
       return tag.meta && tag.meta.affix
@@ -225,66 +221,78 @@ export default {
 
 <style lang="scss" scoped>
 .tags-view-container {
-  height: 34px;
+  height: 38px;
   width: 100%;
-  background: #fff;
-  border-bottom: 1px solid #d8dce5;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .12), 0 0 3px 0 rgba(0, 0, 0, .04);
+  background: #f8faff;
+  border-bottom: 1px solid #e5eaf5;
+  box-shadow: 0 1px 4px rgba(13, 31, 78, 0.06);
+  display: flex;
+  align-items: center;
+
   .tags-view-wrapper {
+    flex: 1;
+    height: 100%;
+
     .tags-view-item {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
       position: relative;
       cursor: pointer;
-      height: 26px;
-      line-height: 26px;
-      border: 1px solid #d8dce5;
-      color: #495060;
+      height: 24px;
+      line-height: 24px;
+      border-radius: 20px;
+      border: none;
+      color: #6b7280;
       background: #fff;
-      padding: 0 8px;
+      padding: 0 10px;
       font-size: 12px;
-      margin-left: 5px;
-      margin-top: 4px;
-      &:first-of-type {
-        margin-left: 15px;
+      margin-left: 6px;
+      margin-top: 7px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+      text-decoration: none;
+
+      &:first-of-type { margin-left: 12px; }
+      &:last-of-type  { margin-right: 12px; }
+
+      &:hover:not(.active) {
+        color: #1a56db;
+        background: #eef2fb;
+        box-shadow: 0 1px 4px rgba(26, 86, 219, 0.12);
       }
-      &:last-of-type {
-        margin-right: 15px;
-      }
+
       &.active {
-        background-color: #42b983;
+        background: #1a56db;
         color: #fff;
-        border-color: #42b983;
-        &::before {
-          content: '';
-          background: #fff;
-          display: inline-block;
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          position: relative;
-          margin-right: 2px;
-        }
+        box-shadow: 0 2px 6px rgba(26, 86, 219, 0.30);
       }
     }
   }
+
   .contextmenu {
     margin: 0;
     background: #fff;
     z-index: 3000;
-    position: absolute;
+    position: fixed;
     list-style-type: none;
-    padding: 5px 0;
-    border-radius: 4px;
+    padding: 4px 0;
+    border-radius: 8px;
     font-size: 12px;
-    font-weight: 400;
-    color: #333;
-    box-shadow: 2px 2px 3px 0 rgba(0, 0, 0, .3);
+    color: #374151;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.06);
+    border: 1px solid #f0f0f0;
+    min-width: 110px;
+
     li {
       margin: 0;
       padding: 7px 16px;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      transition: background 0.15s, color 0.15s;
       &:hover {
-        background: #eee;
+        background: #eef2fb;
+        color: #1a56db;
       }
     }
   }
@@ -292,26 +300,32 @@ export default {
 </style>
 
 <style lang="scss">
-//reset element css of el-icon-close
 .tags-view-wrapper {
   .tags-view-item {
     .el-icon-close {
-      width: 16px;
-      height: 16px;
-      vertical-align: 2px;
+      width: 14px;
+      height: 14px;
+      margin-left: 4px;
       border-radius: 50%;
       text-align: center;
-      transition: all .3s cubic-bezier(.645, .045, .355, 1);
-      transform-origin: 100% 50%;
-      &:before {
-        transform: scale(.6);
+      line-height: 14px;
+      transition: background 0.2s, color 0.2s;
+      flex-shrink: 0;
+
+      &::before {
+        transform: scale(0.7);
         display: inline-block;
-        vertical-align: -3px;
+        vertical-align: 1px;
       }
+
       &:hover {
-        background-color: #b4bccc;
+        background: rgba(0, 0, 0, 0.15);
         color: #fff;
       }
+    }
+
+    &.active .el-icon-close:hover {
+      background: rgba(255, 255, 255, 0.3);
     }
   }
 }

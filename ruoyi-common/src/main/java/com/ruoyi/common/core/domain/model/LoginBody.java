@@ -27,6 +27,11 @@ public class LoginBody
      */
     private String uuid = "";
 
+    /**
+     * 登录方式 0系统账号 1LDAP账号
+     */
+    private String loginType = "0";
+
     public String getUsername()
     {
         return username;
@@ -65,5 +70,15 @@ public class LoginBody
     public void setUuid(String uuid)
     {
         this.uuid = uuid;
+    }
+
+    public String getLoginType()
+    {
+        return loginType;
+    }
+
+    public void setLoginType(String loginType)
+    {
+        this.loginType = loginType;
     }
 }

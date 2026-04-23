@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.MmsRoomMapper">
+
+    <resultMap type="com.ruoyi.system.domain.MmsRoom" id="MmsRoomResult">
+        <result property="roomId"           column="room_id"           />
+        <result property="campus"           column="campus"            />
+        <result property="roomNumber"       column="room_number"       />
+        <result property="roomName"         column="room_name"         />
+        <result property="capacity"         column="capacity"          />
+        <result property="equipment"        column="equipment"         />
+        <result property="status"           column="status"            />
+        <result property="isAbnormal"       column="is_abnormal"       />
+        <result property="damagedEquipment" column="damaged_equipment" />
+        <result property="occupied"         column="occupied"          />
+        <result property="createBy"         column="create_by"         />
+        <result property="createTime"       column="create_time"       />
+        <result property="updateBy"         column="update_by"         />
+        <result property="updateTime"       column="update_time"       />
+        <result property="remark"           column="remark"            />
+    </resultMap>
+
+    <sql id="selectRoomVo">
+        select r.room_id, r.campus, r.room_number, r.room_name, r.capacity,
+               r.equipment, r.status, r.is_abnormal, r.damaged_equipment,
+               r.create_by, r.create_time, r.update_by, r.update_time, r.remark,
+               EXISTS (
+                   select 1 from mms_meeting m
+                   where m.room_id = r.room_id
+                     and m.del_flag = '0'
+                     and m.status = '0'
+                     and now() between m.start_time and m.end_time
+               ) AS occupied
+        from mms_room r
+    </sql>
+
+    <!-- 实体条件查询，对应 BaseMapper.selectByCondition，计算 occupied 子查询 -->
+    <select id="selectByCondition" parameterType="com.ruoyi.system.domain.MmsRoom" resultMap="MmsRoomResult">
+        <include refid="selectRoomVo"/>
+        <where>
+            AND r.del_flag = '0'
+            <if test="campus != null and campus != ''">
+                AND r.campus = #{campus}
+            </if>
+            <if test="roomNumber != null and roomNumber != ''">
+                AND r.room_number like concat('%', #{roomNumber}::text, '%')
+            </if>
+            <if test="status != null and status != ''">
+                AND r.status = #{status}
+            </if>
+        </where>
+        order by r.campus, r.room_number
+    </select>
+
+    <!--
+      MP IPage 分页查询：SQL 只写业务条件，无需写 LIMIT/OFFSET。
+      PaginationInnerInterceptor 拦截后自动追加分页语句，并回填 IPage 的 total/records。
+    -->
+    <select id="selectRoomPage" resultMap="MmsRoomResult">
+        <include refid="selectRoomVo"/>
+        <where>
+            AND r.del_flag = '0'
+            <if test="query.campus != null and query.campus != ''">
+                AND r.campus = #{query.campus}
+            </if>
+            <if test="query.roomNumber != null and query.roomNumber != ''">
+                AND r.room_number like concat('%', #{query.roomNumber}::text, '%')
+            </if>
+            <if test="query.status != null and query.status != ''">
+                AND r.status = #{query.status}
+            </if>
+        </where>
+        order by r.campus, r.room_number
+    </select>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         自定义方法
+         ══════════════════════════════════════════════════════════════ -->
+
+    <select id="selectRoomMeetings" parameterType="Long" resultType="map">
+        select m.meeting_id    AS "meetingId",
+               m.title         AS "title",
+               m.category      AS "category",
+               m.host_name     AS "hostName",
+               m.start_time    AS "startTime",
+               m.end_time      AS "endTime",
+               m.status        AS "status"
+        from mms_meeting m
+        where m.room_id = #{roomId}
+          and m.del_flag = '0'
+        order by m.start_time desc
+        limit 20
+    </select>
+
+    <update id="updateRoomAbnormal" parameterType="com.ruoyi.system.domain.MmsRoom">
+        update mms_room
+        set is_abnormal       = #{isAbnormal},
+            damaged_equipment = #{damagedEquipment},
+            update_by         = #{updateBy},
+            update_time       = now()
+        where room_id = #{roomId}
+    </update>
+
+    <insert id="insertInspection" parameterType="com.ruoyi.system.domain.MmsRoomInspection">
+        insert into mms_room_inspection
+            (room_id, meeting_id, inspect_type, damaged_equip, note, result, create_by, create_time)
+        values
+            (#{roomId}, #{meetingId}, #{inspectType}, #{damagedEquip}, #{note}, #{result}, #{createBy}, now())
+    </insert>
+
+</mapper>

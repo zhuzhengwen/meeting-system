@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.MmsTrackingMapper">
+
+    <resultMap type="com.ruoyi.system.domain.MmsTracking" id="MmsTrackingResult">
+        <result property="trackingId"   column="tracking_id"   />
+        <result property="seqNo"        column="seq_no"        />
+        <result property="meetingId"    column="meeting_id"    />
+        <result property="meetingTitle" column="meeting_title" />
+        <result property="project"      column="project"       />
+        <result property="deptReport"   column="dept_report"   />
+        <result property="directorNote" column="director_note" />
+        <result property="leadPerson"   column="lead_person"   />
+        <result property="leadDept"     column="lead_dept"     />
+        <result property="trackDept"    column="track_dept"    />
+        <result property="initDept"     column="init_dept"     />
+        <result property="status"       column="status"        />
+        <result property="taskDate"     column="task_date"     />
+        <result property="plannedDate"  column="planned_date"  />
+        <result property="createBy"     column="create_by"     />
+        <result property="createTime"   column="create_time"   />
+        <result property="updateBy"     column="update_by"     />
+        <result property="updateTime"   column="update_time"   />
+        <result property="remark"       column="remark"        />
+    </resultMap>
+
+    <resultMap type="com.ruoyi.system.domain.MmsTrackingProgress" id="ProgressResult">
+        <result property="progressId"   column="progress_id"   />
+        <result property="trackingId"   column="tracking_id"   />
+        <result property="progressDate" column="progress_date" />
+        <result property="content"      column="content"       />
+        <result property="createBy"     column="create_by"     />
+        <result property="createTime"   column="create_time"   />
+    </resultMap>
+
+    <sql id="selectTrackingVo">
+        select tracking_id, seq_no, meeting_id, meeting_title, project,
+               dept_report, director_note, lead_person, lead_dept,
+               track_dept, init_dept, status, task_date, planned_date,
+               create_by, create_time, update_by, update_time, remark
+        from mms_tracking
+    </sql>
+
+    <!-- 实体条件查询，对应 BaseMapper.selectByCondition，支持 LIKE 过滤 -->
+    <select id="selectByCondition" parameterType="com.ruoyi.system.domain.MmsTracking" resultMap="MmsTrackingResult">
+        <include refid="selectTrackingVo"/>
+        <where>
+            AND del_flag = '0'
+            <if test="project != null and project != ''">
+                AND project like concat('%', #{project}::text, '%')
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+            <if test="trackDept != null and trackDept != ''">
+                AND track_dept like concat('%', #{trackDept}::text, '%')
+            </if>
+            <if test="initDept != null and initDept != ''">
+                AND init_dept like concat('%', #{initDept}::text, '%')
+            </if>
+            <if test="leadDept != null and leadDept != ''">
+                AND lead_dept like concat('%', #{leadDept}::text, '%')
+            </if>
+        </where>
+        order by tracking_id
+    </select>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         自定义方法
+         ══════════════════════════════════════════════════════════════ -->
+
+    <select id="selectProgressByTrackingId" parameterType="Long" resultMap="ProgressResult">
+        select progress_id, tracking_id, progress_date, content, create_by, create_time
+        from mms_tracking_progress
+        where tracking_id = #{trackingId}
+        order by progress_id
+    </select>
+
+    <insert id="insertProgress" parameterType="com.ruoyi.system.domain.MmsTrackingProgress">
+        insert into mms_tracking_progress (tracking_id, progress_date, content, create_by, create_time)
+        values (#{trackingId}, #{progressDate}, #{content}, #{createBy}, now())
+    </insert>
+
+    <delete id="deleteProgressByTrackingId" parameterType="Long">
+        delete from mms_tracking_progress where tracking_id = #{trackingId}
+    </delete>
+
+</mapper>

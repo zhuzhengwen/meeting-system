@@ -110,9 +110,18 @@ public interface SysDeptMapper
 
     /**
      * 删除部门管理信息
-     * 
+     *
      * @param deptId 部门ID
      * @return 结果
      */
     public int deleteDeptById(Long deptId);
+
+    /**
+     * 根据部门名称和父节点ID查询部门
+     *
+     * @param deptName 部门名称
+     * @param parentId 父节点ID
+     * @return 部门信息
+     */
+    public SysDept selectDeptByNameAndParent(@Param("deptName") String deptName, @Param("parentId") Long parentId);
 }

@@ -170,9 +170,15 @@ public class SysDeptServiceImpl implements ISysDeptService
         return UserConstants.UNIQUE;
     }
 
+    @Override
+    public SysDept selectDeptByNameAndParent(String deptName, Long parentId)
+    {
+        return deptMapper.selectDeptByNameAndParent(deptName, parentId);
+    }
+
     /**
      * 新增保存部门信息
-     * 
+     *
      * @param dept 部门信息
      * @return 结果
      */

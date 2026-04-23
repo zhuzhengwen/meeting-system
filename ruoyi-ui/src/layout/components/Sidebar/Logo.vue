@@ -14,7 +14,7 @@
 </template>
 
 <script>
-import logoImg from '@/assets/logo/logo.png'
+import logoImg from '@/assets/logo/logo.svg'
 import variables from '@/assets/styles/variables.scss'
 
 export default {
@@ -29,13 +29,13 @@ export default {
     variables() {
       return variables;
     },
-	sideTheme() {
+    sideTheme() {
       return this.$store.state.settings.sideTheme
     }
   },
   data() {
     return {
-      title: '若依管理系统',
+      title: '会议管理系统',
       logo: logoImg
     }
   }
@@ -57,7 +57,7 @@ export default {
   width: 100%;
   height: 50px;
   line-height: 50px;
-  background: #2b2f3a;
+  background: #0d1f4e;
   text-align: center;
   overflow: hidden;
 

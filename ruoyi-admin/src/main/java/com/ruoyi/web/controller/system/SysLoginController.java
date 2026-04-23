@@ -14,6 +14,7 @@ import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.core.domain.model.LoginBody;
 import com.ruoyi.common.core.domain.model.LoginUser;
 import com.ruoyi.common.utils.ServletUtils;
+import com.ruoyi.framework.web.service.LdapLoginService;
 import com.ruoyi.framework.web.service.SysLoginService;
 import com.ruoyi.framework.web.service.SysPermissionService;
 import com.ruoyi.framework.web.service.TokenService;
@@ -29,6 +30,9 @@ public class SysLoginController
 {
     @Autowired
     private SysLoginService loginService;
+
+    @Autowired(required = false)
+    private LdapLoginService ldapLoginService;
 
     @Autowired
     private ISysMenuService menuService;
@@ -49,9 +53,20 @@ public class SysLoginController
     public AjaxResult login(@RequestBody LoginBody loginBody)
     {
         AjaxResult ajax = AjaxResult.success();
-        // 生成令牌
-        String token = loginService.login(loginBody.getUsername(), loginBody.getPassword(), loginBody.getCode(),
-                loginBody.getUuid());
+        String token;
+        if ("1".equals(loginBody.getLoginType()))
+        {
+            if (ldapLoginService == null)
+            {
+                return AjaxResult.error("LDAP登录未启用，请联系管理员");
+            }
+            token = ldapLoginService.login(loginBody.getUsername(), loginBody.getPassword());
+        }
+        else
+        {
+            token = loginService.login(loginBody.getUsername(), loginBody.getPassword(),
+                    loginBody.getCode(), loginBody.getUuid());
+        }
         ajax.put(Constants.TOKEN, token);
         return ajax;
     }

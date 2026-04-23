@@ -1,0 +1,6 @@
+<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <path d="M20 3H4v18h16V3zm-2 16H6V5h12v14z" fill="currentColor"/>
+  <path d="M8 7h3v10H8zm5 0h3v10h-3z" fill="currentColor" opacity="0.5"/>
+  <rect x="9.5" y="10" width="5" height="4" rx="1" fill="currentColor"/>
+  <circle cx="13.5" cy="12" r="0.7" fill="white"/>
+</svg>

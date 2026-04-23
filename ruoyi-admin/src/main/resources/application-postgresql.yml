@@ -13,9 +13,9 @@ spring:
         druid:
             # 主库数据源
             master:
-                url: jdbc:postgresql://127.0.0.1:5432/ruoyi?stringtype=unspecified
+                url: jdbc:postgresql://127.0.0.1:5432/postgres?stringtype=unspecified
                 username: postgres
-                password: admin
+                password: postgres
                 #password: ouroPNz5uT34MiPNR/+PKkv3KtupSOg6CwfeWT9wyS6suG5+RRhnK/Spb7s5qmCBtr7zAzXeqmS2jZy6WgHAyw==
             # 从库数据源
             slave:

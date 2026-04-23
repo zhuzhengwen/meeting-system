@@ -1,72 +1,95 @@
 <template>
-  <div class="drawer-container">
-    <div>
-      <div class="setting-drawer-content">
-        <div class="setting-drawer-title">
-          <h3 class="drawer-title">主题风格设置</h3>
-        </div>
-        <div class="setting-drawer-block-checbox">
-          <div class="setting-drawer-block-checbox-item" @click="handleTheme('theme-dark')">
-            <img src="@/assets/images/dark.svg" alt="dark">
-            <div v-if="sideTheme === 'theme-dark'" class="setting-drawer-block-checbox-selectIcon" style="display: block;">
-              <i aria-label="图标: check" class="anticon anticon-check">
-                <svg viewBox="64 64 896 896" data-icon="check" width="1em" height="1em" :fill="theme" aria-hidden="true"
-                     focusable="false" class="">
-                  <path
-                    d="M912 190h-69.9c-9.8 0-19.1 4.5-25.1 12.2L404.7 724.5 207 474a32 32 0 0 0-25.1-12.2H112c-6.7 0-10.4 7.7-6.3 12.9l273.9 347c12.8 16.2 37.4 16.2 50.3 0l488.4-618.9c4.1-5.1.4-12.8-6.3-12.8z"/>
-                </svg>
-              </i>
-            </div>
+  <div class="mms-settings">
+
+    <!-- 主题风格 -->
+    <div class="mms-settings-section">
+      <div class="mms-settings-heading">侧边栏风格</div>
+      <div class="mms-theme-row">
+        <div
+          class="mms-theme-card"
+          :class="{ active: sideTheme === 'theme-dark' }"
+          @click="handleTheme('theme-dark')"
+        >
+          <div class="mms-theme-preview dark">
+            <div class="tp-sidebar"></div>
+            <div class="tp-content"></div>
           </div>
-          <div class="setting-drawer-block-checbox-item" @click="handleTheme('theme-light')">
-            <img src="@/assets/images/light.svg" alt="light">
-            <div v-if="sideTheme === 'theme-light'" class="setting-drawer-block-checbox-selectIcon" style="display: block;">
-              <i aria-label="图标: check" class="anticon anticon-check">
-                <svg viewBox="64 64 896 896" data-icon="check" width="1em" height="1em" :fill="theme" aria-hidden="true"
-                     focusable="false" class="">
-                  <path
-                    d="M912 190h-69.9c-9.8 0-19.1 4.5-25.1 12.2L404.7 724.5 207 474a32 32 0 0 0-25.1-12.2H112c-6.7 0-10.4 7.7-6.3 12.9l273.9 347c12.8 16.2 37.4 16.2 50.3 0l488.4-618.9c4.1-5.1.4-12.8-6.3-12.8z"/>
-                </svg>
-              </i>
-            </div>
+          <span class="mms-theme-label">深色</span>
+          <i v-if="sideTheme === 'theme-dark'" class="el-icon-check mms-theme-check"></i>
+        </div>
+        <div
+          class="mms-theme-card"
+          :class="{ active: sideTheme === 'theme-light' }"
+          @click="handleTheme('theme-light')"
+        >
+          <div class="mms-theme-preview light">
+            <div class="tp-sidebar"></div>
+            <div class="tp-content"></div>
           </div>
-        </div>
-
-        <div class="drawer-item">
-          <span>主题颜色</span>
-          <theme-picker style="float: right;height: 26px;margin: -3px 8px 0 0;" @change="themeChange" />
+          <span class="mms-theme-label">浅色</span>
+          <i v-if="sideTheme === 'theme-light'" class="el-icon-check mms-theme-check"></i>
         </div>
       </div>
-
-      <el-divider/>
-
-      <h3 class="drawer-title">系统布局配置</h3>
-      
-      <div class="drawer-item">
-        <span>开启 TopNav</span>
-        <el-switch v-model="topNav" class="drawer-switch" />
-      </div>
-
-      <div class="drawer-item">
-        <span>开启 Tags-Views</span>
-        <el-switch v-model="tagsView" class="drawer-switch" />
-      </div>
-
-      <div class="drawer-item">
-        <span>固定 Header</span>
-        <el-switch v-model="fixedHeader" class="drawer-switch" />
-      </div>
-
-      <div class="drawer-item">
-        <span>显示 Logo</span>
-        <el-switch v-model="sidebarLogo" class="drawer-switch" />
-      </div>
-
-      <el-divider/>
-
-      <el-button size="small" type="primary" plain icon="el-icon-document-add" @click="saveSetting">保存配置</el-button>
-      <el-button size="small" plain icon="el-icon-refresh" @click="resetSetting">重置配置</el-button>
     </div>
+
+    <div class="mms-settings-divider"></div>
+
+    <!-- 主题色 -->
+    <div class="mms-settings-section">
+      <div class="mms-settings-heading">主题颜色</div>
+      <div class="mms-color-row">
+        <span class="mms-color-label">点击选择主题色</span>
+        <theme-picker style="margin-left:auto;" @change="themeChange" />
+      </div>
+    </div>
+
+    <div class="mms-settings-divider"></div>
+
+    <!-- 布局开关 -->
+    <div class="mms-settings-section">
+      <div class="mms-settings-heading">界面布局</div>
+
+      <div class="mms-switch-row">
+        <div class="mms-switch-info">
+          <span class="mms-switch-name">顶部导航</span>
+          <span class="mms-switch-desc">启用顶部横向导航菜单</span>
+        </div>
+        <el-switch v-model="topNav" active-color="#1a56db" />
+      </div>
+
+      <div class="mms-switch-row">
+        <div class="mms-switch-info">
+          <span class="mms-switch-name">标签页</span>
+          <span class="mms-switch-desc">显示页面多标签切换栏</span>
+        </div>
+        <el-switch v-model="tagsView" active-color="#1a56db" />
+      </div>
+
+      <div class="mms-switch-row">
+        <div class="mms-switch-info">
+          <span class="mms-switch-name">固定顶栏</span>
+          <span class="mms-switch-desc">滚动时顶部导航栏保持固定</span>
+        </div>
+        <el-switch v-model="fixedHeader" active-color="#1a56db" />
+      </div>
+
+      <div class="mms-switch-row">
+        <div class="mms-switch-info">
+          <span class="mms-switch-name">侧边 Logo</span>
+          <span class="mms-switch-desc">显示侧边栏顶部系统 Logo</span>
+        </div>
+        <el-switch v-model="sidebarLogo" active-color="#1a56db" />
+      </div>
+    </div>
+
+    <div class="mms-settings-divider"></div>
+
+    <!-- 操作按钮 -->
+    <div class="mms-settings-actions">
+      <el-button type="primary" size="small" icon="el-icon-check" @click="saveSetting">保存配置</el-button>
+      <el-button size="small" icon="el-icon-refresh" @click="resetSetting">重置</el-button>
+    </div>
+
   </div>
 </template>
 
@@ -83,169 +106,204 @@ export default {
   },
   computed: {
     fixedHeader: {
-      get() {
-        return this.$store.state.settings.fixedHeader
-      },
-      set(val) {
-        this.$store.dispatch('settings/changeSetting', {
-          key: 'fixedHeader',
-          value: val
-        })
-      }
+      get() { return this.$store.state.settings.fixedHeader },
+      set(val) { this.$store.dispatch('settings/changeSetting', { key: 'fixedHeader', value: val }) }
     },
     topNav: {
-      get() {
-        return this.$store.state.settings.topNav
-      },
+      get() { return this.$store.state.settings.topNav },
       set(val) {
-        this.$store.dispatch('settings/changeSetting', {
-          key: 'topNav',
-          value: val
-        })
+        this.$store.dispatch('settings/changeSetting', { key: 'topNav', value: val })
         if (!val) {
-          this.$store.commit("SET_SIDEBAR_ROUTERS", this.$store.state.permission.defaultRoutes);
+          this.$store.commit('SET_SIDEBAR_ROUTERS', this.$store.state.permission.defaultRoutes)
         }
       }
     },
     tagsView: {
-      get() {
-        return this.$store.state.settings.tagsView
-      },
-      set(val) {
-        this.$store.dispatch('settings/changeSetting', {
-          key: 'tagsView',
-          value: val
-        })
-      }
+      get() { return this.$store.state.settings.tagsView },
+      set(val) { this.$store.dispatch('settings/changeSetting', { key: 'tagsView', value: val }) }
     },
     sidebarLogo: {
-      get() {
-        return this.$store.state.settings.sidebarLogo
-      },
-      set(val) {
-        this.$store.dispatch('settings/changeSetting', {
-          key: 'sidebarLogo',
-          value: val
-        })
-      }
-    },
+      get() { return this.$store.state.settings.sidebarLogo },
+      set(val) { this.$store.dispatch('settings/changeSetting', { key: 'sidebarLogo', value: val }) }
+    }
   },
   methods: {
     themeChange(val) {
-      this.$store.dispatch('settings/changeSetting', {
-        key: 'theme',
-        value: val
-      })
-      this.theme = val;
+      this.$store.dispatch('settings/changeSetting', { key: 'theme', value: val })
+      this.theme = val
     },
     handleTheme(val) {
-      this.$store.dispatch('settings/changeSetting', {
-        key: 'sideTheme',
-        value: val
-      })
-      this.sideTheme = val;
+      this.$store.dispatch('settings/changeSetting', { key: 'sideTheme', value: val })
+      this.sideTheme = val
     },
     saveSetting() {
       const loading = this.$loading({
-        lock: true,
-        fullscreen: false,
-        text: "正在保存到本地，请稍后...",
-        spinner: "el-icon-loading",
-        background: "rgba(0, 0, 0, 0.7)"
-      });
-      localStorage.setItem(
-        "layout-setting",
-        `{
-            "topNav":${this.topNav},
-            "tagsView":${this.tagsView},
-            "fixedHeader":${this.fixedHeader},
-            "sidebarLogo":${this.sidebarLogo},
-            "sideTheme":"${this.sideTheme}",
-            "theme":"${this.theme}"
-          }`
-      );
-      setTimeout(loading.close(), 1000)
+        lock: true, fullscreen: false,
+        text: '正在保存到本地，请稍后...',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0,0,0,0.5)'
+      })
+      localStorage.setItem('layout-setting', JSON.stringify({
+        topNav: this.topNav,
+        tagsView: this.tagsView,
+        fixedHeader: this.fixedHeader,
+        sidebarLogo: this.sidebarLogo,
+        sideTheme: this.sideTheme,
+        theme: this.theme
+      }))
+      setTimeout(() => loading.close(), 800)
     },
     resetSetting() {
       this.$loading({
-        lock: true,
-        fullscreen: false,
-        text: "正在清除设置缓存并刷新，请稍后...",
-        spinner: "el-icon-loading",
-        background: "rgba(0, 0, 0, 0.7)"
-      });
-      localStorage.removeItem("layout-setting")
-      setTimeout("window.location.reload()", 1000)
+        lock: true, fullscreen: false,
+        text: '正在重置设置并刷新...',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0,0,0,0.5)'
+      })
+      localStorage.removeItem('layout-setting')
+      setTimeout(() => window.location.reload(), 800)
     }
   }
 }
 </script>
 
 <style lang="scss" scoped>
-  .setting-drawer-content {
-    .setting-drawer-title {
-      margin-bottom: 12px;
-      color: rgba(0, 0, 0, .85);
-      font-size: 14px;
-      line-height: 22px;
-      font-weight: bold;
+.mms-settings {
+  padding: 20px;
+  font-size: 13px;
+  color: #374151;
+
+  .mms-settings-section {
+    margin-bottom: 4px;
+  }
+
+  .mms-settings-heading {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1a56db;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 14px;
+    padding-left: 8px;
+    border-left: 3px solid #1a56db;
+  }
+
+  .mms-settings-divider {
+    height: 1px;
+    background: #f1f5f9;
+    margin: 16px 0;
+  }
+
+  /* 主题卡片 */
+  .mms-theme-row {
+    display: flex;
+    gap: 12px;
+  }
+
+  .mms-theme-card {
+    position: relative;
+    flex: 1;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+
+    &:hover { border-color: #93c5fd; }
+
+    &.active {
+      border-color: #1a56db;
+      box-shadow: 0 0 0 2px rgba(26,86,219,0.12);
     }
 
-    .setting-drawer-block-checbox {
+    .mms-theme-preview {
       display: flex;
-      justify-content: flex-start;
-      align-items: center;
-      margin-top: 10px;
-      margin-bottom: 20px;
+      height: 52px;
 
-      .setting-drawer-block-checbox-item {
-        position: relative;
-        margin-right: 16px;
-        border-radius: 2px;
-        cursor: pointer;
+      .tp-sidebar {
+        width: 26%;
+        height: 100%;
+      }
 
-        img {
-          width: 48px;
-          height: 48px;
-        }
+      .tp-content {
+        flex: 1;
+        height: 100%;
+      }
 
-        .setting-drawer-block-checbox-selectIcon {
-          position: absolute;
-          top: 0;
-          right: 0;
-          width: 100%;
-          height: 100%;
-          padding-top: 15px;
-          padding-left: 24px;
-          color: #1890ff;
-          font-weight: 700;
-          font-size: 14px;
-        }
+      &.dark {
+        .tp-sidebar { background: #0d1f4e; }
+        .tp-content { background: #f1f5f9; }
+      }
+
+      &.light {
+        .tp-sidebar { background: #eef2fb; border-right: 1px solid #dde6f8; }
+        .tp-content { background: #f1f5f9; }
       }
     }
-  }
 
-  .drawer-container {
-    padding: 24px;
-    font-size: 14px;
-    line-height: 1.5;
-    word-wrap: break-word;
-
-    .drawer-title {
-      margin-bottom: 12px;
-      color: rgba(0, 0, 0, .85);
-      font-size: 14px;
-      line-height: 22px;
+    .mms-theme-label {
+      display: block;
+      text-align: center;
+      font-size: 12px;
+      color: #6b7280;
+      padding: 5px 0 6px;
     }
 
-    .drawer-item {
-      color: rgba(0, 0, 0, .65);
-      font-size: 14px;
-      padding: 12px 0;
-    }
-
-    .drawer-switch {
-      float: right
+    .mms-theme-check {
+      position: absolute;
+      top: 5px;
+      right: 6px;
+      font-size: 13px;
+      color: #1a56db;
+      font-weight: bold;
     }
   }
+
+  /* 主题色行 */
+  .mms-color-row {
+    display: flex;
+    align-items: center;
+
+    .mms-color-label {
+      font-size: 13px;
+      color: #6b7280;
+    }
+  }
+
+  /* 开关行 */
+  .mms-switch-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #f9fafb;
+
+    &:last-child { border-bottom: none; }
+
+    .mms-switch-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .mms-switch-name {
+      font-size: 13px;
+      color: #111827;
+      font-weight: 500;
+    }
+
+    .mms-switch-desc {
+      font-size: 11px;
+      color: #9ca3af;
+    }
+  }
+
+  /* 操作按钮 */
+  .mms-settings-actions {
+    display: flex;
+    gap: 8px;
+
+    .el-button { flex: 1; }
+  }
+}
 </style>

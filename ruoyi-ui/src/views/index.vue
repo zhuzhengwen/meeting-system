@@ -1,602 +1,436 @@
 <template>
-  <div class="app-container home">
-    <el-row :gutter="20">
-      <el-col :sm="24" :lg="24">
-        <blockquote class="text-warning" style="font-size: 14px">
-          领取阿里云通用云产品1888优惠券
-          <br />
-          <el-link
-            href="https://www.aliyun.com/minisite/goods?userCode=brki8iof"
-            type="primary"
-            target="_blank"
-            >https://www.aliyun.com/minisite/goods?userCode=brki8iof</el-link
-          >
-          <br />
-          领取腾讯云通用云产品2860优惠券
-          <br />
-          <el-link
-            href="https://cloud.tencent.com/redirect.php?redirect=1025&cps_key=198c8df2ed259157187173bc7f4f32fd&from=console"
-            type="primary"
-            target="_blank"
-            >https://cloud.tencent.com/redirect.php?redirect=1025&cps_key=198c8df2ed259157187173bc7f4f32fd&from=console</el-link
-          >
-          <br />
-          阿里云服务器折扣区
-          <el-link href="http://aly.ruoyi.vip" type="primary" target="_blank"
-            >>☛☛点我进入☚☚</el-link
-          >
-          &nbsp;&nbsp;&nbsp; 腾讯云服务器秒杀区
-          <el-link href="http://txy.ruoyi.vip" type="primary" target="_blank"
-            >>☛☛点我进入☚☚</el-link
-          ><br />
-          <h4 class="text-danger">
-            云产品通用红包，可叠加官网常规优惠使用。(仅限新用户)
-          </h4>
-        </blockquote>
+  <div class="mms-home">
 
-        <hr />
-      </el-col>
-    </el-row>
-    <el-row :gutter="20">
-      <el-col :sm="24" :lg="12" style="padding-left: 20px">
-        <h2>若依后台管理框架</h2>
-        <p>
-          一直想做一款后台管理系统，看了很多优秀的开源项目但是发现没有合适自己的。于是利用空闲休息时间开始自己写一套后台系统。如此有了若依管理系统。，她可以用于所有的Web应用程序，如网站管理后台，网站会员中心，CMS，CRM，OA等等，当然，您也可以对她进行深度定制，以做出更强系统。所有前端后台代码封装过后十分精简易上手，出错概率低。同时支持移动客户端访问。系统会陆续更新一些实用功能。
-        </p>
-        <p>
-          <b>当前版本:</b> <span>v{{ version }}</span>
-        </p>
-        <p>
-          <el-tag type="danger">&yen;免费开源</el-tag>
-        </p>
-        <p>
-          <el-button
-            type="primary"
-            size="mini"
-            icon="el-icon-cloudy"
-            plain
-            @click="goTarget('https://gitee.com/y_project/RuoYi-Vue')"
-            >访问码云</el-button
-          >
-          <el-button
-            size="mini"
-            icon="el-icon-s-home"
-            plain
-            @click="goTarget('http://ruoyi.vip')"
-            >访问主页</el-button
-          >
-        </p>
-      </el-col>
+    <!-- 欢迎横幅 -->
+    <div class="mms-hero">
+      <div class="mms-hero-left">
+        <div class="mms-hero-greeting">{{ greeting }}，<span class="mms-hero-name">{{ userName }}</span></div>
+        <div class="mms-hero-date">{{ dateLabel }}</div>
+        <div class="mms-hero-summary">
+          今日共 <b>{{ todayTotal }}</b> 场会议
+          <span class="mms-dot-sep">·</span>
+          我参与 <b>{{ myTotal }}</b> 场
+          <span class="mms-dot-sep">·</span>
+          待跟进 <b>{{ openTracking }}</b> 项
+        </div>
+      </div>
+      <div class="mms-hero-right">
+        <router-link to="/mms/booking">
+          <el-button type="primary" size="medium" icon="el-icon-circle-plus-outline" round>
+            立即预约
+          </el-button>
+        </router-link>
+      </div>
+      <!-- 装饰 -->
+      <div class="mms-hero-deco d1"></div>
+      <div class="mms-hero-deco d2"></div>
+    </div>
 
-      <el-col :sm="24" :lg="12" style="padding-left: 50px">
-        <el-row>
-          <el-col :span="12">
-            <h2>技术选型</h2>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="6">
-            <h4>后端技术</h4>
-            <ul>
-              <li>SpringBoot</li>
-              <li>Spring Security</li>
-              <li>JWT</li>
-              <li>MyBatis</li>
-              <li>Druid</li>
-              <li>Fastjson</li>
-              <li>...</li>
-            </ul>
-          </el-col>
-          <el-col :span="6">
-            <h4>前端技术</h4>
-            <ul>
-              <li>Vue</li>
-              <li>Vuex</li>
-              <li>Element-ui</li>
-              <li>Axios</li>
-              <li>Sass</li>
-              <li>Quill</li>
-              <li>...</li>
-            </ul>
-          </el-col>
-        </el-row>
-      </el-col>
-    </el-row>
-    <el-divider />
-    <el-row :gutter="20">
-      <el-col :xs="24" :sm="24" :md="12" :lg="8">
-        <el-card class="update-log">
-          <div slot="header" class="clearfix">
-            <span>联系信息</span>
+    <!-- 快捷入口 -->
+    <div class="mms-section-title">功能入口</div>
+    <div class="mms-nav-grid">
+      <router-link v-for="nav in navItems" :key="nav.path" :to="nav.path" class="mms-nav-card">
+        <div class="mms-nav-icon" :style="{'background': nav.light, 'color': nav.color}">
+          <i :class="nav.icon"></i>
+        </div>
+        <div class="mms-nav-body">
+          <div class="mms-nav-title">{{ nav.title }}</div>
+          <div class="mms-nav-desc">{{ nav.desc }}</div>
+        </div>
+        <i class="el-icon-arrow-right mms-nav-arrow"></i>
+      </router-link>
+    </div>
+
+    <!-- 今日会议 + 待跟进 -->
+    <div class="mms-section-title">今日概览</div>
+    <div class="mms-overview-grid">
+
+      <!-- 今日会议列表 -->
+      <div class="mms-panel">
+        <div class="mms-panel-hdr">
+          <span class="mms-panel-title">今日所有会议</span>
+          <router-link to="/mms/schedule">
+            <el-button size="mini" type="text">排程视图 →</el-button>
+          </router-link>
+        </div>
+        <div v-if="!todayMeetings.length" class="mms-empty">今日暂无会议安排</div>
+        <div
+          v-for="m in todayMeetings.slice(0, 8)"
+          :key="m.meetingId"
+          class="mms-meeting-row"
+          :class="getMeetingState(m)"
+        >
+          <div class="mms-meeting-time">
+            <div class="mms-time-start">{{ fmtTime(m.startTime) }}</div>
+            <div class="mms-time-end">{{ fmtTime(m.endTime) }}</div>
           </div>
-          <div class="body">
-            <p>
-              <i class="el-icon-s-promotion"></i> 官网：<el-link
-                href="http://www.ruoyi.vip"
-                target="_blank"
-                >http://www.ruoyi.vip</el-link
-              >
-            </p>
-            <p>
-              <i class="el-icon-user-solid"></i> QQ群：<s>满937441</s>
-              <s>满887144332</s> <s>满180251782</s> <s>满104180207</s>
-              <a href="https://jq.qq.com/?_wv=1027&k=VvjN2nvu" target="_blank"
-                > 186866453</a
-              >
-            </p>
-            <p>
-              <i class="el-icon-chat-dot-round"></i> 微信：<a
-                href="javascript:;"
-                >/ *若依</a
-              >
-            </p>
-            <p>
-              <i class="el-icon-money"></i> 支付宝：<a
-                href="javascript:;"
-                class="支付宝信息"
-                >/ *若依</a
-              >
-            </p>
+          <div class="mms-meeting-bar" :style="{'background': catColor(m.category)}"></div>
+          <div class="mms-meeting-body">
+            <div class="mms-meeting-title">{{ m.title }}</div>
+            <div class="mms-meeting-meta">
+              <span v-if="m.meetingType === '1'" class="mms-tag-online">线上</span>
+              <template v-else>
+                <span class="mms-tag-loc">{{ m.campus }} · {{ m.roomNumber }}</span>
+              </template>
+              <span v-if="m.leadDept" class="mms-tag-dept">{{ m.leadDept }}</span>
+            </div>
           </div>
-        </el-card>
-      </el-col>
-      <el-col :xs="24" :sm="24" :md="12" :lg="8">
-        <el-card class="update-log">
-          <div slot="header" class="clearfix">
-            <span>更新日志</span>
+          <span :class="['mms-state-tag', 'mms-state-' + getMeetingState(m)]">
+            {{ stateLabel(m) }}
+          </span>
+        </div>
+        <div v-if="todayMeetings.length > 8" class="mms-more-hint">
+          还有 {{ todayMeetings.length - 8 }} 场会议
+          <router-link to="/mms/search">查看全部</router-link>
+        </div>
+      </div>
+
+      <!-- 待跟进事项 -->
+      <div class="mms-panel">
+        <div class="mms-panel-hdr">
+          <span class="mms-panel-title">待跟进事项</span>
+          <router-link to="/mms/tracking">
+            <el-button size="mini" type="text">全部跟踪 →</el-button>
+          </router-link>
+        </div>
+        <div v-if="!trackingList.length" class="mms-empty">暂无待跟进事项</div>
+        <div v-for="t in trackingList" :key="t.trackingId" class="mms-tracking-row">
+          <div class="mms-tracking-icon">
+            <i class="el-icon-warning-outline"></i>
           </div>
-          <el-collapse accordion>
-            <el-collapse-item title="v3.4.0 - 2021-02-22">
-              <ol>
-                <li>代码生成模板支持主子表</li>
-                <li>表格右侧工具栏组件支持显隐列</li>
-                <li>图片组件添加预览&移除功能</li>
-                <li>Excel注解支持Image图片导出</li>
-                <li>操作按钮组调整为朴素按钮样式</li>
-                <li>代码生成支持文件上传组件</li>
-                <li>代码生成日期控件区分范围</li>
-                <li>代码生成数据库文本类型生成表单文本域</li>
-                <li>用户手机邮箱&菜单组件修改允许空字符串</li>
-                <li>升级SpringBoot到最新版本2.2.13 提升启动速度</li>
-                <li>升级druid到最新版本v1.2.4</li>
-                <li>升级fastjson到最新版1.2.75</li>
-                <li>升级element-ui到最新版本2.15.0</li>
-                <li>修复IE11浏览器报错问题</li>
-                <li>优化多级菜单之间切换无法缓存的问题</li>
-                <li>修复四级菜单无法显示问题</li>
-                <li>修正侧边栏静态路由丢失问题</li>
-                <li>修复角色管理-编辑角色-功能权限显示异常</li>
-                <li>配置文件新增redis数据库索引属性</li>
-                <li>权限工具类增加admin判断</li>
-                <li>角色非自定义权限范围清空选择值</li>
-                <li>修复导入数据为负浮点数时丢失精度问题</li>
-                <li>移除path-to-regexp正则匹配插件</li>
-                <li>修复生成树表代码异常</li>
-                <li>修改ip字段长度防止ipv6地址长度不够</li>
-                <li>防止get请求参数值为false或0等特殊值会导致无法正确的传参</li>
-                <li>登录后push添加catch防止出现检查错误</li>
-                <li>其他细节优化</li>
-              </ol>
-            </el-collapse-item>
-            <el-collapse-item title="v3.3.0 - 2020-12-14">
-              <ol>
-                <li>新增缓存监控功能</li>
-                <li>支持主题风格配置</li>
-                <li>修复多级菜单之间切换无法缓存的问题</li>
-                <li>多级菜单自动配置组件</li>
-                <li>代码生成预览支持高亮显示</li>
-                <li>支持Get请求映射Params参数</li>
-                <li>删除用户和角色解绑关联</li>
-                <li>去除用户手机邮箱部门必填验证</li>
-                <li>Excel支持注解align对齐方式</li>
-                <li>Excel支持导入Boolean型数据</li>
-                <li>优化头像样式，鼠标移入悬停遮罩</li>
-                <li>代码生成预览提供滚动机制</li>
-                <li>代码生成删除多余的数字float类型</li>
-                <li>修正转换字符串的目标字符集属性</li>
-                <li>回显数据字典防止空值报错</li>
-                <li>日志记录增加过滤多文件场景</li>
-                <li>修改缓存Set方法可能导致嵌套的问题</li>
-                <li>移除前端一些多余的依赖</li>
-                <li>防止安全扫描YUI出现的风险提示</li>
-                <li>修改node-sass为dart-sass</li>
-                <li>升级SpringBoot到最新版本2.1.18</li>
-                <li>升级poi到最新版本4.1.2</li>
-                <li>升级oshi到最新版本v5.3.6</li>
-                <li>升级bitwalker到最新版本1.21</li>
-                <li>升级axios到最新版本0.21.0</li>
-                <li>升级element-ui到最新版本2.14.1</li>
-                <li>升级vue到最新版本2.6.12</li>
-                <li>升级vuex到最新版本3.6.0</li>
-                <li>升级vue-cli到版本4.5.9</li>
-                <li>升级vue-router到最新版本3.4.9</li>
-                <li>升级vue-cli到最新版本4.4.6</li>
-                <li>升级vue-cropper到最新版本0.5.5</li>
-                <li>升级clipboard到最新版本2.0.6</li>
-                <li>升级core-js到最新版本3.8.1</li>
-                <li>升级echarts到最新版本4.9.0</li>
-                <li>升级file-saver到最新版本2.0.4</li>
-                <li>升级fuse.js到最新版本6.4.3</li>
-                <li>升级js-beautify到最新版本1.13.0</li>
-                <li>升级js-cookie到最新版本2.2.1</li>
-                <li>升级path-to-regexp到最新版本6.2.0</li>
-                <li>升级quill到最新版本1.3.7</li>
-                <li>升级screenfull到最新版本5.0.2</li>
-                <li>升级sortablejs到最新版本1.10.2</li>
-                <li>升级vuedraggable到最新版本2.24.3</li>
-                <li>升级chalk到最新版本4.1.0</li>
-                <li>升级eslint到最新版本7.15.0</li>
-                <li>升级eslint-plugin-vue到最新版本7.2.0</li>
-                <li>升级lint-staged到最新版本10.5.3</li>
-                <li>升级runjs到最新版本4.4.2</li>
-                <li>升级sass-loader到最新版本10.1.0</li>
-                <li>升级script-ext-html-webpack-plugin到最新版本2.1.5</li>
-                <li>升级svg-sprite-loader到最新版本5.1.1</li>
-                <li>升级vue-template-compiler到最新版本2.6.12</li>
-                <li>其他细节优化</li>
-              </ol>
-            </el-collapse-item>
-            <el-collapse-item title="v3.2.1 - 2020-11-18">
-              <ol>
-                <li>阻止任意文件下载漏洞</li>
-                <li>代码生成支持上传控件</li>
-                <li>新增图片上传组件</li>
-                <li>调整默认首页</li>
-                <li>升级druid到最新版本v1.2.2</li>
-                <li>mapperLocations配置支持分隔符</li>
-                <li>权限信息调整</li>
-                <li>调整sql默认时间</li>
-                <li>解决代码生成没有bit类型的问题</li>
-                <li>升级pagehelper到最新版1.3.0</li>
-              </ol>
-            </el-collapse-item>
-            <el-collapse-item title="v3.2.0 - 2020-10-10">
-              <ol>
-                <li>升级springboot版本到2.1.17 提升安全性</li>
-                <li>升级oshi到最新版本v5.2.5</li>
-                <li>升级druid到最新版本v1.2.1</li>
-                <li>升级jjwt到版本0.9.1</li>
-                <li>升级fastjson到最新版1.2.74</li>
-                <li>修改sass为node-sass，避免el-icon图标乱码</li>
-                <li>代码生成支持同步数据库</li>
-                <li>代码生成支持富文本控件</li>
-                <li>代码生成页面时不忽略remark属性</li>
-                <li>代码生成添加select必填选项</li>
-                <li>Excel导出类型NUMERIC支持精度浮点类型</li>
-                <li>Excel导出targetAttr优化获取值，防止get方法不规范</li>
-                <li>Excel注解支持自动统计数据总和</li>
-                <li>Excel注解支持设置BigDecimal精度&舍入规则</li>
-                <li>菜单&数据权限新增（展开/折叠 全选/全不选 父子联动）</li>
-                <li>允许用户分配到部门父节点</li>
-                <li>菜单新增是否缓存keep-alive</li>
-                <li>表格操作列间距调整</li>
-                <li>限制系统内置参数不允许删除</li>
-                <li>富文本组件优化，支持自定义高度&图片冲突问题</li>
-                <li>富文本工具栏样式对齐</li>
-                <li>导入excel整形值校验优化</li>
-                <li>修复页签关闭所有时固定标签路由不刷新问题</li>
-                <li>表单构建布局型组件新增按钮</li>
-                <li>左侧菜单文字过长显示省略号</li>
-                <li>修正根节点为子部门时，树状结构显示问题</li>
-                <li>修正调用目标字符串最大长度</li>
-                <li>修正菜单提示信息错误</li>
-                <li>修正定时任务执行一次权限标识</li>
-                <li>修正数据库字符串类型nvarchar</li>
-                <li>优化递归子节点</li>
-                <li>优化数据权限判断</li>
-                <li>其他细节优化</li>
-              </ol>
-            </el-collapse-item>
-
-            <el-collapse-item title="v3.1.0 - 2020-08-13">
-              <ol>
-                <li>表格工具栏右侧添加刷新&显隐查询组件</li>
-                <li>后端支持CORS跨域请求</li>
-                <li>代码生成支持选择上级菜单</li>
-                <li>代码生成支持自定义路径</li>
-                <li>代码生成支持复选框</li>
-                <li>Excel导出导入支持dictType字典类型</li>
-                <li>Excel支持分割字符串组内容</li>
-                <li>验证码类型支持（数组计算、字符验证）</li>
-                <li>升级vue-cli版本到4.4.4</li>
-                <li>修改 node-sass 为 dart-sass</li>
-                <li>表单类型为Integer/Long设置整形默认值</li>
-                <li>代码生成器默认mapper路径与默认mapperScan路径不一致</li>
-                <li>优化防重复提交拦截器</li>
-                <li>优化上级菜单不能选择自己</li>
-                <li>修复角色的权限分配后，未实时生效问题</li>
-                <li>修复在线用户日志记录类型</li>
-                <li>修复富文本空格和缩进保存后不生效问题</li>
-                <li>修复在线用户判断逻辑</li>
-                <li>唯一限制条件只返回单条数据</li>
-                <li>添加获取当前的环境配置方法</li>
-                <li>超时登录后页面跳转到首页</li>
-                <li>全局异常状态汉化拦截处理</li>
-                <li>HTML过滤器改为将html转义</li>
-                <li>检查字符支持小数点&降级改成异常提醒</li>
-                <li>其他细节优化</li>
-              </ol>
-            </el-collapse-item>
-
-            <el-collapse-item title="v3.0.0 - 2020-07-20">
-              <ol>
-                <li>单应用调整为多模块项目</li>
-                <li>升级element-ui版本到2.13.2</li>
-                <li>删除babel，提高编译速度。</li>
-                <li>新增菜单默认主类目</li>
-                <li>编码文件名修改为uuid方式</li>
-                <li>定时任务cron表达式验证</li>
-                <li>角色权限修改时已有权限未自动勾选异常修复</li>
-                <li>防止切换权限用户后登录出现404</li>
-                <li>Excel支持sort导出排序</li>
-                <li>创建用户不允许选择超级管理员角色</li>
-                <li>修复代码生成导入表结构出现异常页面不提醒问题</li>
-                <li>修复代码生成点击多次表修改数据不变化的问题</li>
-                <li>修复头像上传成功二次打开无法改变裁剪框大小和位置问题</li>
-                <li>修复布局为small者mini用户表单显示错位问题</li>
-                <li>修复热部署导致的强换异常问题</li>
-                <li>修改用户管理复选框宽度，防止部分浏览器出现省略号</li>
-                <li>IpUtils工具，清除Xss特殊字符，防止Xff注入攻击</li>
-                <li>生成domain 如果是浮点型 统一用BigDecimal</li>
-                <li>定时任务调整label-width，防止部署出现错位</li>
-                <li>调整表头固定列默认样式</li>
-                <li>代码生成模板调整，字段为String并且必填则加空串条件</li>
-                <li>代码生成字典Integer/Long使用parseInt</li>
-                <li>
-                  修复dict_sort不可update为0的问题&查询返回增加dict_sort升序排序
-                </li>
-                <li>修正岗位导出权限注解</li>
-                <li>禁止加密密文返回前端</li>
-                <li>修复代码生成页面中的查询条件创建时间未生效的问题</li>
-                <li>修复首页搜索菜单外链无法点击跳转问题</li>
-                <li>修复菜单管理选择图标，backspace删除时不过滤数据</li>
-                <li>用户管理部门分支节点不可检查&显示计数</li>
-                <li>数据范围过滤属性调整</li>
-                <li>其他细节优化</li>
-              </ol>
-            </el-collapse-item>
-
-            <el-collapse-item title="v2.3.0 - 2020-06-01">
-              <ol>
-                <li>升级fastjson到最新版1.2.70 修复高危安全漏洞</li>
-                <li>dev启动默认打开浏览器</li>
-                <li>vue-cli使用默认source-map</li>
-                <li>slidebar eslint报错优化</li>
-                <li>当tags-view滚动关闭右键菜单</li>
-                <li>字典管理添加缓存读取</li>
-                <li>参数管理支持缓存操作</li>
-                <li>支持一级菜单（和主页同级）在main区域显示</li>
-                <li>限制外链地址必须以http(s)开头</li>
-                <li>tagview & sidebar 主题颜色与element ui(全局)同步</li>
-                <li>修改数据源类型优先级，先根据方法，再根据类</li>
-                <li>支持是否需要设置token属性，自定义返回码消息。</li>
-                <li>swagger请求前缀加入配置。</li>
-                <li>登录地点设置内容过长则隐藏显示</li>
-                <li>修复定时任务执行一次按钮后不提示消息问题</li>
-                <li>修改上级部门（选择项排除本身和下级）</li>
-                <li>通用http发送方法增加参数 contentType 编码类型</li>
-                <li>更换IP地址查询接口</li>
-                <li>修复页签变量undefined</li>
-                <li>添加校验部门包含未停用的子部门</li>
-                <li>修改定时任务详情下次执行时间日期显示错误</li>
-                <li>角色管理查询设置默认排序字段</li>
-                <li>swagger添加enable参数控制是否启用</li>
-                <li>只对json类型请求构建可重复读取inputStream的request</li>
-                <li>修改代码生成字典字段int类型没有自动选中问题</li>
-                <li>vuex用户名取值修正</li>
-                <li>表格树模板去掉多余的)</li>
-                <li>代码生成序号修正</li>
-                <li>全屏情况下不调整上外边距</li>
-                <li>代码生成Date字段添加默认格式</li>
-                <li>用户管理角色选择权限控制</li>
-                <li>修复路由懒加载报错问题</li>
-                <li>模板sql.vm添加菜单状态</li>
-                <li>设置用户名称不能修改</li>
-                <li>dialog添加append-to-body属性，防止ie遮罩</li>
-                <li>菜单区分状态和显示隐藏功能</li>
-                <li>升级fastjson到最新版1.2.68 修复安全加固</li>
-                <li>修复代码生成如果选择字典类型缺失逗号问题</li>
-                <li>登录请求params更换为data，防止暴露url</li>
-                <li>日志返回时间格式处理</li>
-                <li>添加handle控制允许拖动的元素</li>
-                <li>布局设置点击扩大范围</li>
-                <li>代码生成列属性排序查询</li>
-                <li>代码生成列支持拖动排序</li>
-                <li>修复时间格式不支持ios问题</li>
-                <li>表单构建添加父级class，防止冲突</li>
-                <li>定时任务并发属性修正</li>
-                <li>角色禁用&菜单隐藏不查询权限</li>
-                <li>其他细节优化</li>
-              </ol>
-            </el-collapse-item>
-
-            <el-collapse-item title="v2.2.0 - 2020-03-18">
-              <ol>
-                <li>系统监控新增定时任务功能</li>
-                <li>添加一个打包Web工程bat</li>
-                <li>修复页签鼠标滚轮按下的时候，可以关闭不可关闭的tag</li>
-                <li>修复点击退出登录有时会无提示问题</li>
-                <li>修复防重复提交注解无效问题</li>
-                <li>修复通知公告批量删除异常问题</li>
-                <li>添加菜单时路由地址必填限制</li>
-                <li>代码生成字段描述可编辑</li>
-                <li>修复用户修改个人信息导致缓存不过期问题</li>
-                <li>个人信息创建时间获取正确属性值</li>
-                <li>操作日志详细显示正确类型</li>
-                <li>导入表单击行数据时选中对应的复选框</li>
-                <li>批量替换表前缀逻辑调整</li>
-                <li>固定重定向路径表达式</li>
-                <li>升级element-ui版本到2.13.0</li>
-                <li>操作日志排序调整</li>
-                <li>修复charts切换侧边栏或者缩放窗口显示bug</li>
-                <li>其他细节优化</li>
-              </ol>
-            </el-collapse-item>
-
-            <el-collapse-item title="v2.1.0 - 2020-02-24">
-              <ol>
-                <li>新增表单构建</li>
-                <li>代码生成支持树表结构</li>
-                <li>新增用户导入</li>
-                <li>修复动态加载路由页面刷新问题</li>
-                <li>修复地址开关无效问题</li>
-                <li>汉化错误提示页面</li>
-                <li>代码生成已知问题修改</li>
-                <li>修复多数据源下配置关闭出现异常处理</li>
-                <li>添加HTML过滤器，用于去除XSS漏洞隐患</li>
-                <li>修复上传头像控制台出现异常</li>
-                <li>修改用户管理分页不正确的问题</li>
-                <li>修复验证码记录提示错误</li>
-                <li>修复request.js缺少Message引用</li>
-                <li>修复表格时间为空出现的异常</li>
-                <li>添加Jackson日期反序列化时区配置</li>
-                <li>调整根据用户权限加载菜单数据树形结构</li>
-                <li>调整成功登陆不恢复按钮，防止多次点击</li>
-                <li>修改用户个人资料同步缓存信息</li>
-                <li>修复页面同时出现el-upload和Editor不显示处理</li>
-                <li>修复在角色管理页修改菜单权限偶尔未选中问题</li>
-                <li>配置文件新增redis密码属性</li>
-                <li>设置mybatis全局的配置文件</li>
-                <li>其他细节优化</li>
-              </ol>
-            </el-collapse-item>
-
-            <el-collapse-item title="v2.0.0 - 2019-12-02">
-              <ol>
-                <li>新增代码生成</li>
-                <li>新增@RepeatSubmit注解，防止重复提交</li>
-                <li>新增菜单主目录添加/删除操作</li>
-                <li>日志记录过滤特殊对象，防止转换异常</li>
-                <li>修改代码生成路由脚本错误</li>
-                <li>用户上传头像实时同步缓存，无需重新登录</li>
-                <li>调整切换页签后不重新加载数据</li>
-                <li>添加jsencrypt实现参数的前端加密</li>
-                <li>系统退出删除用户缓存记录</li>
-                <li>其他细节优化</li>
-              </ol>
-            </el-collapse-item>
-            <el-collapse-item title="v1.1.0 - 2019-11-11">
-              <ol>
-                <li>新增在线用户管理</li>
-                <li>新增按钮组功能实现（批量删除、导出、清空）</li>
-                <li>新增查询条件重置按钮</li>
-                <li>新增Swagger全局Token配置</li>
-                <li>新增后端参数校验</li>
-                <li>修复字典管理页面的日期查询异常</li>
-                <li>修改时间函数命名防止冲突</li>
-                <li>去除菜单上级校验，默认为顶级</li>
-                <li>修复用户密码无法修改问题</li>
-                <li>修复菜单类型为按钮时不显示权限标识</li>
-                <li>其他细节优化</li>
-              </ol>
-            </el-collapse-item>
-            <el-collapse-item title="v1.0.0 - 2019-10-08">
-              <ol>
-                <li>若依前后端分离系统正式发布</li>
-              </ol>
-            </el-collapse-item>
-          </el-collapse>
-        </el-card>
-      </el-col>
-      <el-col :xs="24" :sm="24" :md="12" :lg="8">
-        <el-card class="update-log">
-          <div slot="header" class="clearfix">
-            <span>捐赠支持</span>
+          <div class="mms-tracking-body">
+            <div class="mms-tracking-title">{{ t.content || t.description }}</div>
+            <div class="mms-tracking-meta">
+              {{ t.assignee || t.createBy }}
+              <span v-if="t.deadline" class="mms-deadline" :class="isOverdue(t.deadline) ? 'mms-overdue' : ''">
+                · 截止 {{ fmtDate(t.deadline) }}
+              </span>
+            </div>
           </div>
-          <div class="body">
-            <img
-              src="https://oscimg.oschina.net/oscnet/up-d6695f82666e5018f715c41cb7ee60d3b73.png"
-              alt="donate"
-              width="100%"
-            />
-            <span style="display: inline-block; height: 30px; line-height: 30px"
-              >你可以请作者喝杯咖啡表示鼓励</span
-            >
-          </div>
-        </el-card>
-      </el-col>
-    </el-row>
+          <span class="mms-tracking-from">{{ t.meetingTitle || '—' }}</span>
+        </div>
+      </div>
+
+    </div>
+
   </div>
 </template>
 
 <script>
+import { getMeetingSchedule } from '@/api/mms/meeting'
+import { listTracking } from '@/api/mms/tracking'
+
+const CAT_COLORS = {
+  '生产': '#16a34a', '研发': '#7c3aed', '业务': '#d97706',
+  '周边': '#2563eb', '信息技术': '#0891b2', 'IT': '#0891b2'
+}
+
+function pad(n) { return String(n).padStart(2, '0') }
+function todayStr() {
+  const d = new Date()
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`
+}
+
 export default {
-  name: "index",
+  name: 'Home',
   data() {
     return {
-      // 版本号
-      version: "3.4.0",
-    };
+      todayMeetings:  [],
+      trackingList:   [],
+      todayTotal:     0,
+      myTotal:        0,
+      openTracking:   0
+    }
+  },
+  computed: {
+    userName() { return this.$store.getters.name || '' },
+    greeting() {
+      const h = new Date().getHours()
+      if (h < 6)  return '夜深了'
+      if (h < 12) return '早上好'
+      if (h < 18) return '下午好'
+      return '晚上好'
+    },
+    dateLabel() {
+      const d = new Date()
+      const days = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六']
+      return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日  ${days[d.getDay()]}`
+    },
+    navItems() {
+      return [
+        { path: '/mms/dashboard',  title: '会议仪表盘', desc: '今日概况与日历视图',   icon: 'el-icon-data-analysis',    color: '#2563eb', light: '#eff6ff' },
+        { path: '/mms/booking',    title: '预约会议',   desc: '向导式快速预约',       icon: 'el-icon-circle-plus-outline', color: '#16a34a', light: '#f0fdf4' },
+        { path: '/mms/schedule',   title: '会议排程',   desc: '按日查看全部排程',     icon: 'el-icon-date',              color: '#d97706', light: '#fffbeb' },
+        { path: '/mms/meeting',    title: '会议记录',   desc: '历史会议查询与管理',   icon: 'el-icon-document',          color: '#7c3aed', light: '#faf5ff' },
+        { path: '/mms/tracking',   title: '跟踪事项',   desc: '会议行动项跟进',       icon: 'el-icon-finished',          color: '#dc2626', light: '#fef2f2' },
+        { path: '/mms/room',       title: '会议室管理', desc: '资源配置与维护',       icon: 'el-icon-office-building',   color: '#0891b2', light: '#ecfeff' },
+        { path: '/mms/search',     title: '会议查询',   desc: '跨部门全局检索',       icon: 'el-icon-search',            color: '#64748b', light: '#f8fafc' }
+      ]
+    }
+  },
+  created() {
+    this.loadData()
   },
   methods: {
-    goTarget(href) {
-      window.open(href, "_blank");
+    loadData() {
+      const today    = todayStr()
+      const username = this.userName
+
+      getMeetingSchedule(today).then(res => {
+        const all = res.data || []
+        this.todayMeetings = all.sort((a,b) => new Date(a.startTime)-new Date(b.startTime))
+        this.todayTotal    = all.length
+        this.myTotal       = all.filter(m =>
+          m.hostUser === username || m.createBy === username ||
+          (m.attendees || []).some(a => a.userName === username)
+        ).length
+      })
+
+      listTracking({ status: '0', pageNum: 1, pageSize: 10 }).then(res => {
+        this.trackingList  = res.rows || []
+        this.openTracking  = res.total || 0
+      })
     },
-  },
-};
-</script>
 
-<style scoped lang="scss">
-.home {
-  blockquote {
-    padding: 10px 20px;
-    margin: 0 0 20px;
-    font-size: 17.5px;
-    border-left: 5px solid #eee;
-  }
-  hr {
-    margin-top: 20px;
-    margin-bottom: 20px;
-    border: 0;
-    border-top: 1px solid #eee;
-  }
-  .col-item {
-    margin-bottom: 20px;
-  }
+    getMeetingState(m) {
+      const now = new Date()
+      const s   = new Date(m.startTime)
+      const e   = new Date(m.endTime)
+      if (m.status === '1') return 'cancelled'
+      if (now >= s && now < e) return 'ongoing'
+      if (now >= e)            return 'done'
+      return 'upcoming'
+    },
 
-  ul {
-    padding: 0;
-    margin: 0;
-  }
+    stateLabel(m) {
+      const s = this.getMeetingState(m)
+      return { upcoming:'待开始', ongoing:'进行中', done:'已结束', cancelled:'已取消' }[s] || ''
+    },
 
-  font-family: "open sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 13px;
-  color: #676a6c;
-  overflow-x: hidden;
+    catColor(cat) { return CAT_COLORS[cat] || '#3b82f6' },
 
-  ul {
-    list-style-type: none;
-  }
+    fmtTime(ts) {
+      if (!ts) return ''
+      const d = new Date(ts)
+      return `${pad(d.getHours())}:${pad(d.getMinutes())}`
+    },
 
-  h4 {
-    margin-top: 0px;
-  }
+    fmtDate(ts) {
+      if (!ts) return ''
+      const d = new Date(ts)
+      return `${d.getMonth()+1}/${d.getDate()}`
+    },
 
-  h2 {
-    margin-top: 10px;
-    font-size: 26px;
-    font-weight: 100;
-  }
-
-  p {
-    margin-top: 10px;
-
-    b {
-      font-weight: 700;
-    }
-  }
-
-  .update-log {
-    ol {
-      display: block;
-      list-style-type: decimal;
-      margin-block-start: 1em;
-      margin-block-end: 1em;
-      margin-inline-start: 0;
-      margin-inline-end: 0;
-      padding-inline-start: 40px;
-    }
+    isOverdue(ts) { return ts && new Date(ts) < new Date() }
   }
 }
-</style>
+</script>
 
+<style scoped>
+.mms-home {
+  padding: 20px;
+  background: #f1f5f9;
+  min-height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* ── 欢迎横幅 ── */
+.mms-hero {
+  position: relative;
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+  border-radius: 14px;
+  padding: 28px 36px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(37,99,235,.3);
+}
+.mms-hero-greeting {
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 6px;
+}
+.mms-hero-name { color: #bfdbfe; }
+.mms-hero-date {
+  font-size: 13px;
+  color: rgba(255,255,255,.6);
+  margin-bottom: 12px;
+}
+.mms-hero-summary {
+  font-size: 14px;
+  color: rgba(255,255,255,.85);
+}
+.mms-hero-summary b { color: #fff; }
+.mms-dot-sep { margin: 0 8px; color: rgba(255,255,255,.4); }
+.mms-hero-deco {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.08);
+  pointer-events: none;
+}
+.d1 { width: 300px; height: 300px; right: -60px; top: -80px; background: rgba(255,255,255,.03); }
+.d2 { width: 180px; height: 180px; right: 80px;  top: 30px;  background: rgba(255,255,255,.04); }
+
+/* ── 分组标题 ── */
+.mms-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 12px;
+  padding-left: 2px;
+}
+
+/* ── 快捷导航 ── */
+.mms-nav-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+@media (max-width: 1400px) { .mms-nav-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 900px)  { .mms-nav-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.mms-nav-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #fff;
+  border-radius: 10px;
+  padding: 16px 18px;
+  border: 1px solid #e5e7eb;
+  text-decoration: none;
+  transition: box-shadow .15s, transform .15s;
+  cursor: pointer;
+}
+.mms-nav-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,.1);
+  transform: translateY(-2px);
+}
+.mms-nav-icon {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.mms-nav-body { flex: 1; min-width: 0; }
+.mms-nav-title { font-size: 14px; font-weight: 600; color: #111827; margin-bottom: 3px; }
+.mms-nav-desc  { font-size: 12px; color: #9ca3af; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mms-nav-arrow { color: #d1d5db; font-size: 13px; flex-shrink: 0; }
+.mms-nav-card:hover .mms-nav-arrow { color: #6b7280; }
+
+/* ── 今日概览 ── */
+.mms-overview-grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 16px;
+}
+@media (max-width: 1200px) { .mms-overview-grid { grid-template-columns: 1fr; } }
+
+/* ── 通用面板 ── */
+.mms-panel {
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 4px rgba(0,0,0,.05);
+  overflow: hidden;
+}
+.mms-panel-hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid #f3f4f6;
+}
+.mms-panel-title { font-size: 14px; font-weight: 600; color: #111827; }
+.mms-empty { text-align: center; color: #9ca3af; font-size: 13px; padding: 32px 0; }
+
+/* ── 今日会议列表 ── */
+.mms-meeting-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border-bottom: 1px solid #f9fafb;
+  transition: background .1s;
+}
+.mms-meeting-row:last-child { border-bottom: none; }
+.mms-meeting-row:hover { background: #fafbff; }
+.mms-meeting-row.done    { opacity: .55; }
+.mms-meeting-row.cancelled { opacity: .4; }
+
+.mms-meeting-time { width: 46px; flex-shrink: 0; text-align: right; }
+.mms-time-start { font-size: 13px; font-weight: 600; color: #374151; }
+.mms-time-end   { font-size: 11px; color: #9ca3af; margin-top: 1px; }
+
+.mms-meeting-bar {
+  width: 3px; height: 36px; border-radius: 2px; flex-shrink: 0;
+}
+
+.mms-meeting-body { flex: 1; min-width: 0; }
+.mms-meeting-title {
+  font-size: 13px; font-weight: 600; color: #111827;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-bottom: 4px;
+}
+.mms-meeting-meta { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.mms-tag-online, .mms-tag-loc, .mms-tag-dept {
+  font-size: 11px; padding: 1px 7px; border-radius: 20px; white-space: nowrap;
+}
+.mms-tag-online { background: #e0f2fe; color: #0369a1; }
+.mms-tag-loc    { background: #f3f4f6; color: #4b5563; }
+.mms-tag-dept   { background: #eff6ff; color: #1d4ed8; }
+
+.mms-state-tag {
+  font-size: 11px; font-weight: 600;
+  padding: 2px 8px; border-radius: 20px; flex-shrink: 0; white-space: nowrap;
+}
+.mms-state-upcoming  { background: #dbeafe; color: #1d4ed8; }
+.mms-state-ongoing   { background: #d1fae5; color: #065f46; }
+.mms-state-done      { background: #f3f4f6; color: #6b7280; }
+.mms-state-cancelled { background: #fee2e2; color: #991b1b; }
+
+.mms-more-hint {
+  text-align: center;
+  font-size: 12px;
+  color: #9ca3af;
+  padding: 10px 0 12px;
+  border-top: 1px solid #f3f4f6;
+}
+.mms-more-hint a { color: #2563eb; text-decoration: none; margin-left: 4px; }
+
+/* ── 跟踪事项 ── */
+.mms-tracking-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 18px;
+  border-bottom: 1px solid #f9fafb;
+  transition: background .1s;
+}
+.mms-tracking-row:last-child { border-bottom: none; }
+.mms-tracking-row:hover { background: #fffbeb; }
+
+.mms-tracking-icon {
+  width: 30px; height: 30px; border-radius: 8px;
+  background: #fef3c7; color: #d97706;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; flex-shrink: 0; margin-top: 1px;
+}
+.mms-tracking-body { flex: 1; min-width: 0; }
+.mms-tracking-title {
+  font-size: 13px; font-weight: 500; color: #111827;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.mms-tracking-meta { font-size: 12px; color: #9ca3af; margin-top: 3px; }
+.mms-deadline { color: #6b7280; }
+.mms-overdue  { color: #dc2626; font-weight: 600; }
+
+.mms-tracking-from {
+  font-size: 11px; color: #9ca3af;
+  max-width: 90px; overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap; flex-shrink: 0; margin-top: 2px;
+}
+</style>

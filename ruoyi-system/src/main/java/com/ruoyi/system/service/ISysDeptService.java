@@ -84,8 +84,17 @@ public interface ISysDeptService
     public String checkDeptNameUnique(SysDept dept);
 
     /**
+     * 根据部门名称和父节点ID查询部门（用于LDAP自动建部门时去重）
+     *
+     * @param deptName 部门名称
+     * @param parentId 父节点ID
+     * @return 部门信息
+     */
+    public SysDept selectDeptByNameAndParent(String deptName, Long parentId);
+
+    /**
      * 新增保存部门信息
-     * 
+     *
      * @param dept 部门信息
      * @return 结果
      */

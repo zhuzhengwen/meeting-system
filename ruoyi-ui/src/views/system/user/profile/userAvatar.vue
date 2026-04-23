@@ -1,53 +1,67 @@
 <template>
   <div>
-    <div class="user-info-head" @click="editCropper()"><img v-bind:src="options.img" title="点击上传头像" class="img-circle img-lg" /></div>
-    <el-dialog :title="title" :visible.sync="open" width="800px" append-to-body @opened="modalOpened"  @close="closeDialog()">
-      <el-row>
-        <el-col :xs="24" :md="12" :style="{height: '350px'}">
+    <!-- 头像展示 -->
+    <div class="av-wrap" @click="editCropper">
+      <img :src="options.img" class="av-img" alt="头像" />
+      <div class="av-overlay">
+        <i class="el-icon-camera"></i>
+        <span>更换头像</span>
+      </div>
+    </div>
+
+    <!-- 裁剪弹窗 -->
+    <el-dialog
+      title="更换头像"
+      :visible.sync="open"
+      width="760px"
+      append-to-body
+      @opened="modalOpened"
+      @close="closeDialog"
+      custom-class="av-dialog"
+    >
+      <div class="av-crop-area">
+        <!-- 裁剪区 -->
+        <div class="av-cropper-box">
           <vue-cropper
+            v-if="visible"
             ref="cropper"
             :img="options.img"
-            :info="true"
-            :autoCrop="options.autoCrop"
-            :autoCropWidth="options.autoCropWidth"
-            :autoCropHeight="options.autoCropHeight"
-            :fixedBox="options.fixedBox"
+            :info="false"
+            :autoCrop="true"
+            :autoCropWidth="200"
+            :autoCropHeight="200"
+            :fixedBox="true"
+            outputType="png"
             @realTime="realTime"
-            v-if="visible"
           />
-        </el-col>
-        <el-col :xs="24" :md="12" :style="{height: '350px'}">
-          <div class="avatar-upload-preview">
-            <img :src="previews.url" :style="previews.img" />
+        </div>
+
+        <!-- 预览区 -->
+        <div class="av-preview-box">
+          <div class="av-preview-title">预览效果</div>
+          <div class="av-preview-circle">
+            <img v-if="previews.url" :src="previews.url" :style="previews.img" />
           </div>
-        </el-col>
-      </el-row>
-      <br />
-      <el-row>
-        <el-col :lg="2" :md="2">
+          <div class="av-preview-label">头像预览</div>
+        </div>
+      </div>
+
+      <!-- 工具栏 -->
+      <div class="av-toolbar">
+        <div class="av-toolbar-left">
           <el-upload action="#" :http-request="requestUpload" :show-file-list="false" :before-upload="beforeUpload">
-            <el-button size="small">
-              选择
-              <i class="el-icon-upload el-icon--right"></i>
-            </el-button>
+            <el-button size="small" icon="el-icon-folder-opened">选择图片</el-button>
           </el-upload>
-        </el-col>
-        <el-col :lg="{span: 1, offset: 2}" :md="2">
-          <el-button icon="el-icon-plus" size="small" @click="changeScale(1)"></el-button>
-        </el-col>
-        <el-col :lg="{span: 1, offset: 1}" :md="2">
-          <el-button icon="el-icon-minus" size="small" @click="changeScale(-1)"></el-button>
-        </el-col>
-        <el-col :lg="{span: 1, offset: 1}" :md="2">
-          <el-button icon="el-icon-refresh-left" size="small" @click="rotateLeft()"></el-button>
-        </el-col>
-        <el-col :lg="{span: 1, offset: 1}" :md="2">
-          <el-button icon="el-icon-refresh-right" size="small" @click="rotateRight()"></el-button>
-        </el-col>
-        <el-col :lg="{span: 2, offset: 6}" :md="2">
-          <el-button type="primary" size="small" @click="uploadImg()">提 交</el-button>
-        </el-col>
-      </el-row>
+          <el-button size="small" icon="el-icon-zoom-in"       @click="changeScale(1)"   title="放大"></el-button>
+          <el-button size="small" icon="el-icon-zoom-out"      @click="changeScale(-1)"  title="缩小"></el-button>
+          <el-button size="small" icon="el-icon-refresh-left"  @click="rotateLeft"       title="左转"></el-button>
+          <el-button size="small" icon="el-icon-refresh-right" @click="rotateRight"      title="右转"></el-button>
+        </div>
+        <div class="av-toolbar-right">
+          <el-button @click="open = false">取消</el-button>
+          <el-button type="primary" icon="el-icon-upload2" @click="uploadImg">上传头像</el-button>
+        </div>
+      </div>
     </el-dialog>
   </div>
 </template>
@@ -59,114 +73,159 @@ import { uploadAvatar } from "@/api/system/user";
 
 export default {
   components: { VueCropper },
-  props: {
-    user: {
-      type: Object
-    }
-  },
+  props: { user: { type: Object } },
   data() {
     return {
-      // 是否显示弹出层
       open: false,
-      // 是否显示cropper
       visible: false,
-      // 弹出层标题
-      title: "修改头像",
-      options: {
-        img: store.getters.avatar, //裁剪图片的地址
-        autoCrop: true, // 是否默认生成截图框
-        autoCropWidth: 200, // 默认生成截图框宽度
-        autoCropHeight: 200, // 默认生成截图框高度
-        fixedBox: true // 固定截图框大小 不允许改变
-      },
+      options: { img: store.getters.avatar },
       previews: {}
     };
   },
   methods: {
-    // 编辑头像
-    editCropper() {
-      this.open = true;
+    editCropper()  { this.open = true; },
+    modalOpened()  { this.visible = true; },
+    requestUpload() {},
+    rotateLeft()   { this.$refs.cropper.rotateLeft(); },
+    rotateRight()  { this.$refs.cropper.rotateRight(); },
+    changeScale(n) { this.$refs.cropper.changeScale(n || 1); },
+    realTime(data) { this.previews = data; },
+    closeDialog()  {
+      this.options.img = store.getters.avatar;
+      this.visible = false;
     },
-    // 打开弹出层结束时的回调
-    modalOpened() {
-      this.visible = true;
-    },
-    // 覆盖默认的上传行为
-    requestUpload() {
-    },
-    // 向左旋转
-    rotateLeft() {
-      this.$refs.cropper.rotateLeft();
-    },
-    // 向右旋转
-    rotateRight() {
-      this.$refs.cropper.rotateRight();
-    },
-    // 图片缩放
-    changeScale(num) {
-      num = num || 1;
-      this.$refs.cropper.changeScale(num);
-    },
-    // 上传预处理
     beforeUpload(file) {
-      if (file.type.indexOf("image/") == -1) {
-        this.msgError("文件格式错误，请上传图片类型,如：JPG，PNG后缀的文件。");
-      } else {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => {
-          this.options.img = reader.result;
-        };
+      if (!file.type.startsWith("image/")) {
+        this.msgError("请上传图片文件（JPG / PNG）");
+        return false;
       }
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => { this.options.img = reader.result; };
     },
-    // 上传图片
     uploadImg() {
       this.$refs.cropper.getCropBlob(data => {
-        let formData = new FormData();
-        formData.append("avatarfile", data);
-        uploadAvatar(formData).then(response => {
+        const fd = new FormData();
+        fd.append("avatarfile", data);
+        uploadAvatar(fd).then(res => {
           this.open = false;
-          this.options.img = process.env.VUE_APP_BASE_API + response.imgUrl;
-          store.commit('SET_AVATAR', this.options.img);
-          this.msgSuccess("修改成功");
           this.visible = false;
+          this.options.img = process.env.VUE_APP_BASE_API + res.imgUrl;
+          store.commit("SET_AVATAR", this.options.img);
+          this.msgSuccess("头像更新成功");
         });
       });
-    },
-    // 实时预览
-    realTime(data) {
-      this.previews = data;
-    },
-    // 关闭窗口
-    closeDialog() {
-      this.options.img = store.getters.avatar
-	  this.visible = false;
     }
   }
 };
 </script>
-<style scoped lang="scss">
-.user-info-head {
+
+<style lang="scss" scoped>
+/* ── 头像入口 ── */
+.av-wrap {
   position: relative;
-  display: inline-block;
-  height: 120px;
+  width: 90px;
+  height: 90px;
+  margin: 0 auto;
+  cursor: pointer;
+  border-radius: 50%;
+  overflow: hidden;
+
+  &:hover .av-overlay { opacity: 1; }
 }
 
-.user-info-head:hover:after {
-  content: '+';
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  color: #eee;
-  background: rgba(0, 0, 0, 0.5);
-  font-size: 24px;
-  font-style: normal;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  cursor: pointer;
-  line-height: 110px;
+.av-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   border-radius: 50%;
+  border: 3px solid #e8eef8;
+  box-shadow: 0 2px 10px rgba(0,0,0,.10);
+  display: block;
+}
+
+.av-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, .50);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity .2s;
+
+  i    { font-size: 20px; color: #fff; }
+  span { font-size: 11px; color: rgba(255,255,255,.9); }
+}
+
+/* ── 裁剪弹窗内容 ── */
+.av-crop-area {
+  display: flex;
+  gap: 20px;
+  height: 320px;
+}
+
+.av-cropper-box {
+  flex: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #1a1a2e;
+}
+
+.av-preview-box {
+  width: 140px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.av-preview-title {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+  align-self: flex-start;
+}
+
+.av-preview-circle {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid #e8eef8;
+  box-shadow: 0 2px 12px rgba(0,0,0,.12);
+  background: #f1f5f9;
+  flex-shrink: 0;
+}
+
+.av-preview-label {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+/* ── 工具栏 ── */
+.av-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #f1f5f9;
+
+  .av-toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .av-toolbar-right {
+    display: flex;
+    gap: 8px;
+  }
 }
 </style>
