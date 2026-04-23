@@ -91,6 +91,33 @@
           </div>
         </div>
 
+        <!-- 筛选栏 -->
+        <div class="bk-filter-bar">
+          <span class="bk-filter-label"><i class="el-icon-filter"></i> 快速筛选</span>
+          <div class="bk-filter-group">
+            <el-input-number
+              v-model="filterCapacity"
+              :min="0" :max="200"
+              size="mini"
+              controls-position="right"
+              placeholder="最少人数"
+              style="width:110px"
+            />
+            <span style="font-size:12px;color:#6b7280">人以上</span>
+          </div>
+          <div class="bk-filter-group">
+            <span
+              v-for="eq in equipOptions" :key="eq.key"
+              :class="['bk-filter-chip', filterEquip.includes(eq.key) ? 'active ' + eq.cls : '']"
+              @click="toggleEquip(eq.key)"
+            >{{ eq.label }}</span>
+          </div>
+          <el-button v-if="filterCapacity > 0 || filterEquip.length" size="mini" @click="resetFilter">
+            <i class="el-icon-refresh"></i> 重置
+          </el-button>
+          <span class="bk-filter-count">共 {{ filteredRooms.length }} 间</span>
+        </div>
+
         <!-- 时间轴主体 -->
         <div class="bk-timeline-wrap">
           <!-- 表头：小时刻度 -->
@@ -102,20 +129,54 @@
                 :style="{ left: hourToPercent(h) + '%' }">
                 {{ pad(h) }}:00
               </div>
-              <!-- 纵向网格线（叠加在ruler上，供视觉对齐） -->
+              <div v-for="h in displayHalfSlots" :key="'half'+h"
+                class="bk-half-label"
+                :style="{ left: hourToPercent(h) + '%' }">
+                :30
+              </div>
               <div v-for="h in displayHours" :key="'g'+h"
                 class="bk-ruler-grid"
+                :style="{ left: hourToPercent(h) + '%' }"></div>
+              <div v-for="h in displayHalfSlots" :key="'gh'+h"
+                class="bk-ruler-half-grid"
                 :style="{ left: hourToPercent(h) + '%' }"></div>
             </div>
           </div>
 
           <!-- 会议室行 -->
-          <div v-for="room in campusRooms" :key="room.roomId" class="bk-room-row">
+          <div v-for="room in filteredRooms" :key="room.roomId" class="bk-room-row">
             <!-- 左列：房间信息 -->
-            <div class="bk-room-col">
-              <div class="bk-room-number">{{ room.roomNumber }}</div>
-              <div class="bk-room-meta">{{ room.capacity }}人·{{ fmtEquip(room.equipment) }}</div>
-            </div>
+            <el-popover placement="right" trigger="hover" width="240" popper-class="bk-room-popover">
+              <!-- Popover 内容 -->
+              <div class="bk-pop-header">
+                <span class="bk-pop-name">{{ room.campus }}{{ room.roomNumber }}</span>
+                <span class="bk-pop-cap"><i class="el-icon-user"></i>{{ room.capacity }} 人</span>
+              </div>
+              <div class="bk-pop-divider"></div>
+              <div class="bk-pop-section-label">设备清单</div>
+              <div class="bk-pop-equip" v-if="room.equipment">
+                <span
+                  v-for="eq in splitEquip(room.equipment)" :key="eq"
+                  class="bk-equip-tag" :class="equipClass(eq)"
+                ><i :class="equipIcon(eq)"></i>{{ eq }}</span>
+              </div>
+              <div v-else class="bk-pop-empty">暂无设备信息</div>
+
+              <!-- 触发区 -->
+              <div slot="reference" class="bk-room-col">
+                <div class="bk-room-number">{{ room.roomNumber }}</div>
+                <div class="bk-room-cap-badge"><i class="el-icon-user"></i>{{ room.capacity }}人</div>
+                <div class="bk-room-eq-dots" v-if="room.equipment">
+                  <span
+                    v-for="eq in splitEquip(room.equipment).slice(0,4)" :key="eq"
+                    class="bk-dot" :class="equipClass(eq)" :title="eq"
+                  ></span>
+                  <span v-if="splitEquip(room.equipment).length > 4" class="bk-dot-more">
+                    +{{ splitEquip(room.equipment).length - 4 }}
+                  </span>
+                </div>
+              </div>
+            </el-popover>
 
             <!-- 右列：轨道 -->
             <div class="bk-track"
@@ -126,6 +187,10 @@
               <!-- 小时网格线 -->
               <div v-for="h in displayHours" :key="'line'+h"
                 class="bk-track-grid"
+                :style="{ left: hourToPercent(h) + '%' }"></div>
+              <!-- 半小时网格线 -->
+              <div v-for="h in displayHalfSlots" :key="'half'+h"
+                class="bk-track-half-grid"
                 :style="{ left: hourToPercent(h) + '%' }"></div>
 
               <!-- 当前时间红线 -->
@@ -259,6 +324,7 @@ export default {
       categories: ['生产', '周边', '研发', '业务'],
       frequencies: ['单次', '日报', '周报', '双周报', '月报'],
       displayHours: Array.from({ length: END_HOUR - START_HOUR + 1 }, (_, i) => START_HOUR + i),
+      displayHalfSlots: Array.from({ length: END_HOUR - START_HOUR }, (_, i) => START_HOUR + i + 0.5),
       halfHourSlots: [],
       onlineEndSlots: [],
       campusRooms: [],
@@ -286,7 +352,17 @@ export default {
         category: [{ required: true, message: '请选择会议类型', trigger: 'change' }]
       },
       submitting: false,
-      dateOptions: { disabledDate: d => d.getTime() < Date.now() - 86400000 }
+      dateOptions: { disabledDate: d => d.getTime() < Date.now() - 86400000 },
+      filterCapacity: 0,
+      filterEquip: [],
+      equipOptions: [
+        { key: '投影', label: '投影仪', cls: 'eq-display' },
+        { key: '大屏', label: '大屏',   cls: 'eq-display' },
+        { key: '视频', label: '视频会议', cls: 'eq-video' },
+        { key: '白板', label: '白板',   cls: 'eq-board' },
+        { key: '音响', label: '音响',   cls: 'eq-audio' },
+        { key: '网络', label: '网络',   cls: 'eq-net' }
+      ]
     }
   },
   computed: {
@@ -314,6 +390,16 @@ export default {
       if (!this.selValid) return ''
       const mins = Math.abs(this.sel.endMins - this.sel.startMins)
       return mins < 60 ? `${mins}分钟` : `${Math.floor(mins/60)}小时${mins%60 ? mins%60+'分钟' : ''}`
+    },
+    filteredRooms() {
+      return this.campusRooms.filter(r => {
+        if (this.filterCapacity > 0 && r.capacity < this.filterCapacity) return false
+        if (this.filterEquip.length) {
+          const eq = (r.equipment || '').toLowerCase()
+          if (!this.filterEquip.every(k => eq.includes(k))) return false
+        }
+        return true
+      })
     },
     summaryTimeStr() {
       if (this.meetingType === '1') {
@@ -354,6 +440,37 @@ export default {
       if (!str) return ''
       const arr = str.split(',').filter(Boolean)
       return arr.slice(0, 2).join('、') + (arr.length > 2 ? '…' : '')
+    },
+    toggleEquip(key) {
+      const i = this.filterEquip.indexOf(key)
+      if (i >= 0) this.filterEquip.splice(i, 1)
+      else this.filterEquip.push(key)
+    },
+    resetFilter() {
+      this.filterCapacity = 0
+      this.filterEquip = []
+    },
+    splitEquip(str) {
+      if (!str) return []
+      return str.split(',').map(s => s.trim()).filter(Boolean)
+    },
+    equipIcon(eq) {
+      const s = eq.toLowerCase()
+      if (s.includes('投影') || s.includes('大屏') || s.includes('显示')) return 'el-icon-monitor'
+      if (s.includes('视频') || s.includes('摄像'))  return 'el-icon-video-camera'
+      if (s.includes('音响') || s.includes('麦克'))  return 'el-icon-microphone'
+      if (s.includes('白板') || s.includes('黑板'))  return 'el-icon-edit'
+      if (s.includes('网络') || s.includes('wifi'))  return 'el-icon-connection'
+      return 'el-icon-s-tools'
+    },
+    equipClass(eq) {
+      const s = eq.toLowerCase()
+      if (s.includes('投影') || s.includes('大屏') || s.includes('显示'))  return 'eq-display'
+      if (s.includes('视频') || s.includes('摄像') || s.includes('会议系统')) return 'eq-video'
+      if (s.includes('音响') || s.includes('麦克') || s.includes('扩音'))   return 'eq-audio'
+      if (s.includes('白板') || s.includes('黑板'))                          return 'eq-board'
+      if (s.includes('网络') || s.includes('wifi') || s.includes('宽带'))   return 'eq-net'
+      return 'eq-default'
     },
     hourToPercent(h) {
       return ((h - START_HOUR) * 60 / TOTAL_MINS) * 100
@@ -652,6 +769,7 @@ export default {
 
 /* ── 表头刻度行 ── */
 .bk-header-row { display:flex; border-bottom:2px solid #e5e7eb; }
+.bk-header-row .bk-room-col { height: 28px; justify-content: center; }
 .bk-hours-ruler {
   flex:1; position:relative; height:28px;
 }
@@ -664,22 +782,133 @@ export default {
 .bk-ruler-grid {
   position:absolute; top:0; bottom:0; width:1px; background:#e5e7eb;
 }
+.bk-half-label {
+  position:absolute; top:14px;
+  font-size:9px; color:#d1d5db;
+  transform:translateX(-50%);
+  white-space:nowrap; user-select:none;
+}
+.bk-ruler-half-grid {
+  position:absolute; top:0; bottom:0; width:1px; background:#f0f0f0;
+}
+
+/* ── 筛选栏 ── */
+.bk-filter-bar {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 10px;
+  background: #f8faff; border: 1px solid #e0e8ff;
+  border-radius: 8px; padding: 10px 14px; margin-bottom: 14px;
+}
+.bk-filter-label {
+  font-size: 12px; font-weight: 600; color: #1a56db;
+  display: flex; align-items: center; gap: 4px; flex-shrink: 0;
+}
+.bk-filter-group { display: flex; align-items: center; gap: 6px; }
+.bk-filter-chip {
+  font-size: 12px; padding: 3px 10px; border-radius: 20px; cursor: pointer;
+  border: 1px solid #e5e7eb; background: #fff; color: #6b7280;
+  transition: all .15s; user-select: none;
+  &:hover { border-color: #9ca3af; color: #374151; }
+  &.active {
+    color: #fff;
+    &.eq-display { background: #3b82f6; border-color: #3b82f6; }
+    &.eq-video   { background: #a855f7; border-color: #a855f7; }
+    &.eq-audio   { background: #f97316; border-color: #f97316; }
+    &.eq-board   { background: #22c55e; border-color: #22c55e; }
+    &.eq-net     { background: #0ea5e9; border-color: #0ea5e9; }
+  }
+}
+.bk-filter-count {
+  margin-left: auto; font-size: 12px; color: #9ca3af;
+}
 
 /* ── 左侧房间列 ── */
 .bk-room-col {
-  width:140px; flex-shrink:0;
-  padding:8px 10px 8px 4px;
-  display:flex; flex-direction:column; justify-content:center;
-  border-right:2px solid #e5e7eb;
+  width: 150px; flex-shrink: 0;
+  padding: 0 10px 0 6px;
+  display: flex; flex-direction: column; justify-content: center; gap: 3px;
+  border-right: 2px solid #e5e7eb;
+  cursor: default;
 }
-.bk-room-number { font-size:15px; font-weight:700; color:#1f2937; }
-.bk-room-meta   { font-size:11px; color:#9ca3af; margin-top:2px; line-height:1.4; }
+.bk-room-number {
+  font-size: 14px; font-weight: 700; color: #1f2937;
+}
+.bk-room-meta {
+  font-size: 11px; color: #9ca3af;
+  display: flex; align-items: center; gap: 3px;
+}
+.bk-meta-dot { margin: 0 1px; }
+
+/* ── Popover 内容 ── */
+.bk-pop-header {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;
+}
+.bk-pop-name {
+  font-size: 15px; font-weight: 700; color: #111827;
+}
+.bk-pop-cap {
+  font-size: 12px; color: #6b7280; background: #f1f5f9;
+  padding: 2px 8px; border-radius: 10px;
+  display: flex; align-items: center; gap: 4px;
+}
+.bk-pop-divider { height: 1px; background: #f1f5f9; margin-bottom: 10px; }
+.bk-pop-section-label {
+  font-size: 11px; font-weight: 600; color: #9ca3af;
+  text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px;
+}
+.bk-pop-equip {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  .bk-equip-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; }
+}
+.bk-pop-empty { font-size: 12px; color: #9ca3af; font-style: italic; }
+
+/* ── 左列触发区 ── */
+.bk-room-col {
+  width: 150px; flex-shrink: 0;
+  padding: 0 10px 0 8px;
+  display: flex; flex-direction: column; justify-content: center; gap: 3px;
+  border-right: 2px solid #e5e7eb;
+  cursor: default;
+}
+.bk-room-number { font-size: 13px; font-weight: 700; color: #1f2937; }
+.bk-room-cap-badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 11px; color: #6b7280;
+}
+.bk-room-eq-dots {
+  display: flex; align-items: center; gap: 3px; flex-wrap: wrap;
+}
+.bk-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  &.eq-display { background: #3b82f6; }
+  &.eq-video   { background: #a855f7; }
+  &.eq-audio   { background: #f97316; }
+  &.eq-board   { background: #22c55e; }
+  &.eq-net     { background: #0ea5e9; }
+  &.eq-default { background: #9ca3af; }
+}
+.bk-dot-more { font-size: 10px; color: #9ca3af; line-height: 1; }
+.bk-room-meta  { font-size: 11px; color: #9ca3af; display: flex; align-items: center; gap: 3px; }
+.bk-meta-dot   { margin: 0 1px; }
+
+/* 设备标签（popover + 筛选共用） */
+.bk-equip-tag {
+  font-size: 10px; padding: 1px 6px; border-radius: 10px;
+  font-weight: 500; white-space: nowrap; line-height: 1.6;
+  border: 1px solid transparent;
+}
+.eq-display { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+.eq-video   { background: #fdf4ff; color: #7e22ce; border-color: #e9d5ff; }
+.eq-audio   { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+.eq-board   { background: #f0fdf4; color: #15803d; border-color: #a7f3d0; }
+.eq-net     { background: #f0f9ff; color: #0369a1; border-color: #bae6fd; }
+.eq-default { background: #f9fafb; color: #4b5563; border-color: #e5e7eb; }
 
 /* ── 会议室行 ── */
 .bk-room-row {
-  display:flex; border-bottom:1px solid #f3f4f6; min-height:52px;
+  display: flex; border-bottom: 1px solid #f3f4f6;
+  height: 52px;
 }
-.bk-room-row:last-child { border-bottom:none; }
+.bk-room-row:last-child { border-bottom: none; }
 
 /* ── 轨道 ── */
 .bk-track {
@@ -693,6 +922,9 @@ export default {
 /* 纵向网格线 */
 .bk-track-grid {
   position:absolute; top:0; bottom:0; width:1px; background:#e5e7eb; pointer-events:none;
+}
+.bk-track-half-grid {
+  position:absolute; top:0; bottom:0; width:1px; background:#f3f4f6; pointer-events:none;
 }
 
 /* 当前时间红线 */

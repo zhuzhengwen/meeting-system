@@ -1,9 +1,13 @@
 package com.ruoyi.system.service.impl;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.ruoyi.system.config.BpmProperties;
 import com.ruoyi.system.domain.MmsMeeting;
 import com.ruoyi.system.domain.MmsMeetingAttendee;
 import com.ruoyi.system.mapper.MmsMeetingMapper;
@@ -17,6 +21,9 @@ public class MmsMeetingServiceImpl implements IMmsMeetingService
 {
     @Autowired
     private MmsMeetingMapper meetingMapper;
+
+    @Autowired
+    private BpmProperties bpmProperties;
 
     @Override
     public MmsMeeting selectMeetingById(Long meetingId) {
@@ -41,6 +48,16 @@ public class MmsMeetingServiceImpl implements IMmsMeetingService
     @Override
     @Transactional
     public int insertMeeting(MmsMeeting meeting) {
+        // 生成唯一会议编号
+        if (meeting.getMeetingNo() == null || meeting.getMeetingNo().isEmpty()) {
+            String dateStr = new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date());
+            String suffix  = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+            meeting.setMeetingNo("MTG-" + dateStr + "-" + suffix);
+        }
+        // BPM 启用时默认"待审批"，否则直接"已确认"
+        if (meeting.getStatus() == null || meeting.getStatus().isEmpty()) {
+            meeting.setStatus(bpmProperties.isEnabled() ? "3" : "0");
+        }
         int rows = meetingMapper.insert(meeting);
         insertAttendees(meeting);
         return rows;

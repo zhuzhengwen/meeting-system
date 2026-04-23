@@ -13,6 +13,7 @@ import com.ruoyi.common.enums.BusinessType;
 import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.system.domain.MmsMeeting;
 import com.ruoyi.system.domain.MmsMeetingAttendee;
+import com.ruoyi.system.service.IBpmApprovalService;
 import com.ruoyi.system.service.IMmsMeetingService;
 
 /**
@@ -24,6 +25,9 @@ public class MmsMeetingController extends BaseController
 {
     @Autowired
     private IMmsMeetingService meetingService;
+
+    @Autowired
+    private IBpmApprovalService bpmApprovalService;
 
     @PreAuthorize("@ss.hasPermi('mms:meeting:list')")
     @GetMapping("/list")
@@ -50,7 +54,15 @@ public class MmsMeetingController extends BaseController
     @PostMapping
     public AjaxResult add(@Validated @RequestBody MmsMeeting meeting) {
         meeting.setCreateBy(SecurityUtils.getUsername());
-        return toAjax(meetingService.insertMeeting(meeting));
+        meetingService.insertMeeting(meeting);
+        // 事务提交后再调 BPM，确保回调时能查到会议记录
+        if (bpmApprovalService.isEnabled()) {
+            bpmApprovalService.startApproval(meeting);
+        }
+        AjaxResult result = AjaxResult.success();
+        result.put("meetingNo", meeting.getMeetingNo());
+        result.put("pendingApproval", bpmApprovalService.isEnabled());
+        return result;
     }
 
     @PreAuthorize("@ss.hasPermi('mms:meeting:edit')")

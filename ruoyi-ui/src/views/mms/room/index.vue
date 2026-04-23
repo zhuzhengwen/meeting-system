@@ -23,38 +23,36 @@
       <div
         v-for="room in roomList"
         :key="room.roomId"
-        :class="['room-card', room.isAbnormal === '1' ? 'card-abnormal' : '']"
+        :class="['room-card', 'rc-' + statusDotClass(room)]"
         @click="handleCardClick(room)">
 
-        <!-- 状态指示点 -->
-        <div class="room-card-header">
-          <span class="room-card-title">{{ room.campus }}{{ room.roomNumber }}</span>
-          <span :class="['room-status-dot', statusDotClass(room)]"></span>
-        </div>
-
-        <!-- 状态文字 + 容量 -->
-        <div class="room-card-sub">
-          <span :class="['room-state-label', statusDotClass(room)]">
-            <i :class="statusIcon(room)"></i>
-            {{ statusText(room) }}
+        <!-- 顶部：名称 + 状态胶囊 -->
+        <div class="rc-header">
+          <div class="rc-name">{{ room.roomName || room.roomNumber }}</div>
+          <span :class="['rc-status', statusDotClass(room)]">
+            <i class="rc-dot"></i>{{ statusText(room) }}
           </span>
-          <span class="room-capacity">· 容纳 {{ room.capacity }} 人</span>
         </div>
 
-        <!-- 异常标签 -->
-        <div v-if="room.isAbnormal === '1'" class="room-abnormal-badge">
-          <i class="el-icon-warning-outline"></i> 设备异常 · 不可预约
+        <!-- 园区 · 房间号 -->
+        <div class="rc-sub">{{ room.campus }} · {{ room.roomNumber }}</div>
+
+        <div class="rc-divider"></div>
+
+        <!-- 容量 -->
+        <div class="rc-meta">
+          <span class="rc-cap"><i class="el-icon-user"></i> {{ room.capacity }} 人</span>
+          <span v-if="room.isAbnormal === '1'" class="rc-abnormal"><i class="el-icon-warning"></i> 设备异常</span>
         </div>
 
-        <!-- 设备标签 -->
-        <div class="room-eq-area">
-          <el-tag
-            v-for="eq in splitEq(room.equipment)"
-            :key="eq"
-            size="mini"
-            :type="isDamaged(room, eq) ? 'danger' : ''"
-            style="margin:2px 2px 0 0">{{ eq }}</el-tag>
-          <span v-if="!room.equipment" class="room-no-eq">暂无设备</span>
+        <!-- 设备 -->
+        <div class="rc-equip">
+          <span
+            v-for="eq in splitEq(room.equipment)" :key="eq"
+            :class="['rc-eq-tag', eqClass(eq), isDamaged(room, eq) ? 'is-damaged' : '']">
+            {{ eq }}
+          </span>
+          <span v-if="!room.equipment" class="rc-no-eq">暂无设备</span>
         </div>
       </div>
 
@@ -295,6 +293,15 @@ export default {
       if (room.status === '1') return '已禁用'
       return room.occupied ? '使用中' : '空闲'
     },
+    eqClass(eq) {
+      const s = eq.toLowerCase()
+      if (s.includes('投影') || s.includes('大屏') || s.includes('显示')) return 'eq-display'
+      if (s.includes('视频') || s.includes('摄像')) return 'eq-video'
+      if (s.includes('音响') || s.includes('麦克') || s.includes('电话')) return 'eq-audio'
+      if (s.includes('白板') || s.includes('黑板')) return 'eq-board'
+      if (s.includes('网络') || s.includes('wifi')) return 'eq-net'
+      return 'eq-default'
+    },
     isDamaged(room, eq) {
       if (!room.damagedEquipment) return false
       return room.damagedEquipment.split(',').includes(eq)
@@ -430,77 +437,101 @@ export default {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .room-toolbar {
   display: flex; justify-content: space-between; align-items: center;
   margin-bottom: 16px; flex-wrap: wrap; gap: 8px;
 }
 
-/* 卡片网格 */
+/* ── 卡片网格 ── */
 .room-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 14px;
   margin-bottom: 20px;
 }
 
 .room-card {
   background: #fff;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #e8eef8;
+  border-top: 3px solid #e8eef8;
   border-radius: 10px;
-  padding: 16px;
+  padding: 14px 16px 12px;
   cursor: pointer;
   transition: box-shadow .2s, transform .15s;
-  position: relative;
-}
-.room-card:hover {
-  box-shadow: 0 4px 18px rgba(0,0,0,.1);
-  transform: translateY(-2px);
-}
-.card-abnormal {
-  border-color: #fca5a5;
-  background: #fff5f5;
+  &:hover { box-shadow: 0 6px 20px rgba(26,86,219,.1); transform: translateY(-2px); }
+  &.rc-dot-free     { border-top-color: #22c55e; }
+  &.rc-dot-occupied { border-top-color: #ef4444; }
+  &.rc-dot-disabled { border-top-color: #9ca3af; }
+  &.rc-dot-abnormal { border-top-color: #f59e0b; background: #fffbf0; }
 }
 
-.room-card-header {
-  display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 6px;
+/* 名称行 */
+.rc-header {
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 6px;
+  margin-bottom: 3px;
 }
-.room-card-title {
-  font-size: 15px; font-weight: 700; color: #111827;
+.rc-name {
+  font-size: 14px; font-weight: 700; color: #111827;
+  line-height: 1.4; flex: 1; min-width: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
-/* 状态点 */
-.room-status-dot {
-  width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0;
+/* 状态胶囊 */
+.rc-status {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; font-weight: 500; padding: 2px 8px;
+  border-radius: 20px; white-space: nowrap; flex-shrink: 0;
+  .rc-dot { width: 6px; height: 6px; border-radius: 50%; }
+  &.dot-free     { background: #f0fdf4; color: #16a34a; .rc-dot { background: #22c55e; } }
+  &.dot-occupied { background: #fef2f2; color: #dc2626; .rc-dot { background: #ef4444; } }
+  &.dot-disabled { background: #f3f4f6; color: #6b7280; .rc-dot { background: #9ca3af; } }
+  &.dot-abnormal { background: #fffbeb; color: #d97706; .rc-dot { background: #f59e0b; } }
 }
-.dot-free     { background: #22c55e; box-shadow: 0 0 0 3px rgba(34,197,94,.2); }
-.dot-occupied { background: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,.2); }
-.dot-disabled { background: #9ca3af; }
-.dot-abnormal { background: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,.2); }
 
-.room-card-sub {
-  font-size: 12px; color: #6b7280; margin-bottom: 8px; display: flex; align-items: center; gap: 4px;
+/* 副标题 */
+.rc-sub {
+  font-size: 12px; color: #9ca3af; margin-bottom: 10px;
 }
-.room-state-label { display: flex; align-items: center; gap: 3px; font-weight: 500; }
-.dot-free     .room-state-label, .room-state-label.dot-free     { color: #16a34a; }
-.dot-occupied .room-state-label, .room-state-label.dot-occupied { color: #dc2626; }
-.dot-disabled .room-state-label, .room-state-label.dot-disabled { color: #9ca3af; }
-.dot-abnormal .room-state-label, .room-state-label.dot-abnormal { color: #d97706; }
 
-.room-capacity { color: #9ca3af; }
-
-.room-abnormal-badge {
-  font-size: 11px; color: #b91c1c; background: #fee2e2;
-  border-radius: 4px; padding: 2px 8px; margin-bottom: 8px; display: inline-block;
+.rc-divider {
+  height: 1px; background: #f3f4f6; margin-bottom: 10px;
 }
-.room-eq-area { min-height: 24px; }
-.room-no-eq { font-size: 12px; color: #d1d5db; }
 
-/* 详情弹窗 */
+/* 容量 + 异常 */
+.rc-meta {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+}
+.rc-cap {
+  font-size: 12px; color: #6b7280;
+  display: inline-flex; align-items: center; gap: 4px;
+  i { color: #1a56db; font-size: 13px; }
+}
+.rc-abnormal {
+  font-size: 11px; color: #b45309; background: #fef3c7;
+  padding: 1px 7px; border-radius: 4px;
+  display: inline-flex; align-items: center; gap: 3px;
+}
+
+/* 设备标签 */
+.rc-equip { display: flex; flex-wrap: wrap; gap: 4px; min-height: 20px; }
+.rc-eq-tag {
+  font-size: 11px; padding: 1px 7px; border-radius: 10px;
+  font-weight: 500; border: 1px solid transparent;
+  &.is-damaged { opacity: .5; text-decoration: line-through; }
+}
+.eq-display { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+.eq-video   { background: #fdf4ff; color: #7e22ce; border-color: #e9d5ff; }
+.eq-audio   { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+.eq-board   { background: #f0fdf4; color: #15803d; border-color: #a7f3d0; }
+.eq-net     { background: #f0f9ff; color: #0369a1; border-color: #bae6fd; }
+.eq-default { background: #f9fafb; color: #4b5563; border-color: #e5e7eb; }
+.rc-no-eq   { font-size: 12px; color: #d1d5db; }
+
+/* ── 详情弹窗 ── */
 .detail-section-title {
   font-size: 13px; font-weight: 600; color: #374151;
-  margin-bottom: 10px; border-left: 3px solid #3b82f6; padding-left: 8px;
+  margin-bottom: 10px; border-left: 3px solid #1a56db; padding-left: 8px;
 }
 
 /* 会议类型徽章 */

@@ -45,6 +45,9 @@ public class MmsMeeting extends BaseEntity
     private String description;
     private String status;
 
+    /** BPM 流程实例 ID，发起审批后由 BPM 返回 */
+    private String processInstanceId;
+
     /** 参会人员列表（非 DB 字段） */
     @TableField(exist = false)
     private List<MmsMeetingAttendee> attendees;
@@ -110,6 +113,9 @@ public class MmsMeeting extends BaseEntity
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public String getProcessInstanceId() { return processInstanceId; }
+    public void setProcessInstanceId(String processInstanceId) { this.processInstanceId = processInstanceId; }
 
     public List<MmsMeetingAttendee> getAttendees() { return attendees; }
     public void setAttendees(List<MmsMeetingAttendee> attendees) { this.attendees = attendees; }

@@ -1,3 +1,19 @@
+# BPM 审批流对接配置
+bpm:
+  # 是否启用 BPM 审批（false 时预约直接通过，无需审批）
+  enabled: false
+  # BPM 服务根地址（不含路径），如 http://bpm.example.com
+  url: http://bpm.example.com
+  # BPM 中的流程定义 Key，与 BPM 侧约定
+  process-def-key: meeting_approval
+  # 本系统对外的回调地址（BPM 审批完成后调此接口）
+  callback-url: http://your-server/mms/bpm/callback
+  # 回调鉴权 Token，双方提前约定，建议使用随机强密码
+  callback-token: CHANGE_ME_TO_A_STRONG_SECRET
+  # HTTP 超时（毫秒）
+  connect-timeout: 5000
+  read-timeout: 10000
+
 # 项目相关配置
 ruoyi:
   # 名称
