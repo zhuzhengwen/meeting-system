@@ -3,7 +3,7 @@
     <!-- 页头 -->
     <div class="mms-page-header">
       <h2 style="margin:0;font-size:20px;color:#1f2937">会议排程</h2>
-      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <div class="mms-nav-row">
         <el-button size="small" icon="el-icon-arrow-left" @click="changeDate(-1)">前一天</el-button>
         <el-date-picker v-model="scheduleDate" type="date" size="small" value-format="yyyy-MM-dd"
           style="width:150px" @change="loadSchedule" />
@@ -69,29 +69,76 @@
     </el-card>
 
     <!-- 会议详情弹窗 -->
-    <el-dialog :title="detail.title" :visible.sync="detailVisible" width="500px" append-to-body>
-      <el-descriptions :column="2" border size="small">
-        <el-descriptions-item label="园区/会议室">
-          <template v-if="detail.campus">{{ detail.campus }} {{ detail.roomNumber }}</template>
-          <template v-else>线上会议</template>
-        </el-descriptions-item>
-        <el-descriptions-item label="会议类型">
-          <span :class="['mms-cat-badge', 'cat-' + detail.category]">{{ detail.category }}</span>
-        </el-descriptions-item>
-        <el-descriptions-item label="开始时间">{{ formatDatetime(detail.startTime) }}</el-descriptions-item>
-        <el-descriptions-item label="结束时间">{{ formatDatetime(detail.endTime) }}</el-descriptions-item>
-        <el-descriptions-item label="主持人">{{ detail.hostName }}</el-descriptions-item>
-        <el-descriptions-item label="主导部门">{{ detail.leadDept }}</el-descriptions-item>
-        <el-descriptions-item label="频率">{{ detail.frequency }}</el-descriptions-item>
-        <el-descriptions-item label="状态">{{ statusLabel(detail.status) }}</el-descriptions-item>
-        <el-descriptions-item label="会议说明" :span="2">{{ detail.description || '—' }}</el-descriptions-item>
-      </el-descriptions>
+    <el-dialog :visible.sync="detailVisible" width="580px" append-to-body>
+      <div slot="title" class="dd-header">
+        <div class="dd-title">{{ detailData.title }}</div>
+        <div class="dd-tags">
+          <span :class="['mms-cat-badge', 'cat-' + detailData.category]">{{ detailData.category }}</span>
+          <span :class="['dd-status-tag', 'status-' + detailData.status]">{{ statusLabel(detailData.status) }}</span>
+          <span v-if="detailData.frequency" class="dd-freq">{{ detailData.frequency }}</span>
+        </div>
+      </div>
+
+      <div class="dd-time-banner">
+        <div class="dd-time-block">
+          <div class="dd-time-label">开始时间</div>
+          <div class="dd-time-val">{{ formatDatetime(detailData.startTime) }}</div>
+        </div>
+        <div class="dd-time-arrow">→</div>
+        <div class="dd-time-block">
+          <div class="dd-time-label">结束时间</div>
+          <div class="dd-time-val">{{ formatDatetime(detailData.endTime) }}</div>
+        </div>
+      </div>
+
+      <div class="dd-info-list">
+        <div class="dd-info-row">
+          <span class="dd-info-label"><i class="el-icon-location-outline"></i> 地点</span>
+          <span class="dd-info-val">
+            <template v-if="detailData.meetingType==='1'">线上会议{{ detailData.tencentId ? ' · ' + detailData.tencentId : '' }}</template>
+            <template v-else>{{ detailData.campus }} {{ detailData.roomNumber }}</template>
+          </span>
+        </div>
+        <div class="dd-info-row">
+          <span class="dd-info-label"><i class="el-icon-user"></i> 主持人</span>
+          <span class="dd-info-val">{{ detailData.hostName || '—' }}</span>
+        </div>
+        <div class="dd-info-row">
+          <span class="dd-info-label"><i class="el-icon-office-building"></i> 主导部门</span>
+          <span class="dd-info-val">{{ detailData.leadDept || '—' }}</span>
+        </div>
+        <div class="dd-info-row" v-if="detailData.description">
+          <span class="dd-info-label"><i class="el-icon-document"></i> 说明</span>
+          <span class="dd-info-val">{{ detailData.description }}</span>
+        </div>
+      </div>
+
+      <div class="dd-attendees-section">
+        <div class="dd-section-title">参会人员</div>
+        <div v-if="detailData.attendees && detailData.attendees.length" class="dd-attendees">
+          <span v-for="a in detailData.attendees" :key="a.attendeeId"
+            :class="['dd-attendee', a.isDelegate==='1'?'is-delegate':'']">
+            {{ a.userName }}{{ a.isDelegate==='1' ? ' (转派)' : '' }}
+          </span>
+        </div>
+        <div v-else class="dd-empty-small">暂无参会人员</div>
+      </div>
+
+      <div slot="footer" class="dd-footer">
+        <el-button size="small" @click="detailVisible=false">关闭</el-button>
+        <div>
+          <el-button v-if="detailData.status==='0'" size="small" type="warning"
+            icon="el-icon-close" @click="handleCancel(detailData)">取消会议</el-button>
+          <el-button v-if="detailData.status==='0'" size="small" type="success"
+            icon="el-icon-check" @click="handleComplete(detailData)">标记完成</el-button>
+        </div>
+      </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import { getMeetingSchedule } from '@/api/mms/meeting'
+import { getMeetingSchedule, getMeeting, cancelMeeting, completeMeeting } from '@/api/mms/meeting'
 
 export default {
   name: 'MmsSchedule',
@@ -107,7 +154,7 @@ export default {
       startHour: 8,
       endHour: 21,
       detailVisible: false,
-      detail: {}
+      detailData: {}
     }
   },
   computed: {
@@ -174,11 +221,31 @@ export default {
       return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${this.formatTime(ts)}`
     },
     statusLabel(s) {
-      return { '0': '已确认', '1': '已取消', '2': '已完成' }[s] || s
+      return { '0': '已确认', '1': '已取消', '2': '已完成', '3': '待审批', '4': '审批拒绝' }[s] || s
     },
     showDetail(m) {
-      this.detail = m
-      this.detailVisible = true
+      getMeeting(m.meetingId).then(res => {
+        this.detailData = res.data
+        this.detailVisible = true
+      })
+    },
+    handleCancel(row) {
+      this.$confirm(`确定取消会议"${row.title}"吗？`, '提示', { type: 'warning' }).then(() => {
+        return cancelMeeting(row.meetingId)
+      }).then(() => {
+        this.msgSuccess('已取消')
+        this.detailVisible = false
+        this.loadSchedule()
+      })
+    },
+    handleComplete(row) {
+      this.$confirm(`确定将"${row.title}"标记为已完成吗？`, '提示', { type: 'warning' }).then(() => {
+        return completeMeeting(row.meetingId)
+      }).then(() => {
+        this.msgSuccess('已完成')
+        this.detailVisible = false
+        this.loadSchedule()
+      })
     }
   }
 }
@@ -186,11 +253,13 @@ export default {
 
 <style scoped>
 .mms-page-header {
-  display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; margin-left: -10px; margin-top: -10px;
 }
+.mms-page-header > * { margin-left: 10px; margin-top: 10px; }
 .mms-legend {
-  display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px;
+  display: flex; align-items: center; flex-wrap: wrap; margin-bottom: 14px; margin-left: -10px; margin-top: -10px;
 }
+.mms-legend > * { margin-left: 10px; margin-top: 10px; }
 .mms-legend-label { font-size: 12px; color: #9ca3af; }
 .mms-cat-badge {
   font-size: 12px; padding: 2px 10px; border-radius: 10px; font-weight: 500;
@@ -232,9 +301,10 @@ export default {
 .mms-meeting-block {
   position: absolute; top: 3px; bottom: 3px; border-radius: 4px;
   padding: 4px 8px; overflow: hidden; cursor: pointer; min-width: 4px;
-  display: flex; flex-direction: column; justify-content: center; gap: 3px;
+  display: flex; flex-direction: column; justify-content: center;
   transition: filter .15s;
 }
+.mms-meeting-block > * + * { margin-top: 3px; }
 .mms-meeting-block:hover { filter: brightness(.93); }
 .mms-block-title {
   font-size: 12px; font-weight: 600; color: #fff;
@@ -247,4 +317,69 @@ export default {
 .cat-bg-研发 { background: #7560a8; color: #fff; }
 .cat-bg-业务 { background: #b87048; color: #fff; }
 .mms-empty-timeline { text-align: center; color: #9ca3af; padding: 40px 0; }
+.mms-nav-row { display: flex; align-items: center; flex-wrap: wrap; }
+.mms-nav-row > * + * { margin-left: 8px; }
+
+/* ── 详情弹窗 ── */
+.dd-header { display: flex; flex-direction: column; }
+.dd-header > * + * { margin-top: 6px; }
+.dd-title { font-size: 18px; font-weight: 700; color: #1f2937; line-height: 1.3; }
+.dd-tags { display: flex; align-items: center; flex-wrap: wrap; margin-left: -6px; margin-top: -6px; }
+.dd-tags > * { margin-left: 6px; margin-top: 6px; }
+
+.dd-status-tag {
+  display: inline-block; font-size: 11px; padding: 2px 10px;
+  border-radius: 20px; font-weight: 600;
+}
+.status-0 { background: #dbeafe; color: #1d4ed8; }
+.status-1 { background: #f3f4f6; color: #6b7280; }
+.status-2 { background: #d1fae5; color: #065f46; }
+.status-3 { background: #fef3c7; color: #92400e; }
+.status-4 { background: #fee2e2; color: #991b1b; }
+
+.dd-freq {
+  display: inline-block; font-size: 11px; padding: 2px 10px;
+  border-radius: 20px; background: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb;
+}
+
+.dd-time-banner {
+  display: flex; align-items: center; justify-content: space-around;
+  background: #f0f5ff; border: 1px solid #c7d7fb; border-radius: 8px;
+  padding: 14px 20px; margin-bottom: 16px;
+}
+.dd-time-block { text-align: center; }
+.dd-time-label { font-size: 11px; color: #6b7280; margin-bottom: 4px; }
+.dd-time-val { font-size: 15px; font-weight: 600; color: #1e3a8a; }
+.dd-time-arrow { font-size: 20px; color: #93c5fd; }
+
+.dd-info-list { margin-bottom: 16px; }
+.dd-info-row {
+  display: flex; align-items: flex-start;
+  padding: 8px 0; border-bottom: 1px solid #f3f4f6; font-size: 13px;
+}
+.dd-info-row > * + * { margin-left: 10px; }
+.dd-info-row:last-child { border-bottom: none; }
+.dd-info-label { width: 80px; flex-shrink: 0; color: #9ca3af; }
+.dd-info-label i { margin-right: 4px; }
+.dd-info-val { flex: 1; color: #1f2937; font-weight: 500; line-height: 1.5; }
+
+.dd-attendees-section {
+  background: #f9fafb; border-radius: 8px; padding: 12px 14px; margin-bottom: 4px;
+}
+.dd-section-title { font-size: 12px; font-weight: 600; color: #6b7280; margin-bottom: 10px; }
+.dd-attendees { display: flex; flex-wrap: wrap; margin-left: -8px; margin-top: -8px; }
+.dd-attendees > * { margin-left: 8px; margin-top: 8px; }
+.dd-attendee {
+  display: inline-flex; align-items: center;
+  font-size: 13px; padding: 4px 12px; border-radius: 20px;
+  background: #fff; border: 1px solid #e5e7eb; color: #374151; font-weight: 500;
+}
+.dd-attendee.is-delegate { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
+.dd-empty-small { font-size: 13px; color: #9ca3af; }
+
+.dd-footer {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.dd-footer > div { display: flex; }
+.dd-footer > div > * + * { margin-left: 8px; }
 </style>

@@ -198,7 +198,7 @@
           <span class="cp-tl-info">
             {{ copyForm.campus }} — {{ copyForm.date }}&nbsp;&nbsp;在时间轴上拖拽选择会议时段
           </span>
-          <div style="display:flex;align-items:center;gap:12px">
+          <div class="cp-flex-12">
             <span class="cp-leg"><span class="cp-swatch cp-swatch-occ"></span>已占用</span>
             <span class="cp-leg"><span class="cp-swatch cp-swatch-sel"></span>选中</span>
             <el-button size="mini" @click="copyStep = 1; resetSel()">◀ 重新选择</el-button>
@@ -569,9 +569,11 @@ export default {
 .mm-td.sq-actions .el-button + .el-button { margin-left: 5px; }
 
 /* ── 详情弹窗 ── */
-.dd-header { display:flex; flex-direction:column; gap:6px; }
+.dd-header { display:flex; flex-direction:column; }
+.dd-header > * + * { margin-top:6px; }
 .dd-title { font-size:18px; font-weight:700; color:#1f2937; line-height:1.3; }
-.dd-tags { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.dd-tags { display:flex; align-items:center; flex-wrap:wrap; margin-left:-6px; margin-top:-6px; }
+.dd-tags > * { margin-left:6px; margin-top:6px; }
 .dd-status-tag { display:inline-block; font-size:11px; padding:2px 10px; border-radius:20px; font-weight:600; }
 .status-0 { background:#dbeafe; color:#1d4ed8; }
 .status-1 { background:#f3f4f6; color:#6b7280; }
@@ -583,14 +585,16 @@ export default {
 .dd-time-val { font-size:15px; font-weight:600; color:#1e3a8a; }
 .dd-time-arrow { font-size:20px; color:#93c5fd; }
 .dd-info-list { margin-bottom:16px; }
-.dd-info-row { display:flex; align-items:flex-start; gap:10px; padding:8px 0; border-bottom:1px solid #f3f4f6; font-size:13px; }
+.dd-info-row { display:flex; align-items:flex-start; padding:8px 0; border-bottom:1px solid #f3f4f6; font-size:13px; }
+.dd-info-row > * + * { margin-left:10px; }
 .dd-info-row:last-child { border-bottom:none; }
 .dd-info-label { width:80px; flex-shrink:0; color:#9ca3af; }
 .dd-info-label i { margin-right:4px; }
 .dd-info-val { flex:1; color:#1f2937; font-weight:500; line-height:1.5; }
 .dd-attendees-section { background:#f9fafb; border-radius:8px; padding:12px 14px; margin-bottom:4px; }
 .dd-section-title { font-size:12px; font-weight:600; color:#6b7280; margin-bottom:10px; }
-.dd-attendees { display:flex; flex-wrap:wrap; gap:8px; }
+.dd-attendees { display:flex; flex-wrap:wrap; margin-left:-8px; margin-top:-8px; }
+.dd-attendees > * { margin-left:8px; margin-top:8px; }
 .dd-attendee { display:inline-flex; align-items:center; font-size:13px; padding:4px 12px; border-radius:20px; background:#fff; border:1px solid #e5e7eb; color:#374151; font-weight:500; }
 .dd-attendee.is-delegate { background:#eff6ff; border-color:#bfdbfe; color:#1d4ed8; }
 .dd-empty-small { font-size:13px; color:#9ca3af; }
@@ -610,16 +614,18 @@ export default {
 
 /* ── 原会议信息条 ── */
 .cp-source-bar {
-  display:flex; flex-wrap:wrap; gap:20px;
+  display:flex; flex-wrap:wrap; margin-left:-20px; margin-top:-20px;
   background:#f0f5ff; border:1px solid #c7d7fb; border-radius:8px;
   padding:12px 18px; font-size:13px; color:#374151;
 }
+.cp-source-bar > * { margin-left:20px; margin-top:20px; }
 .cp-src-item b { color:#1e3a8a; }
 
 /* ── 时间轴顶栏 ── */
 .cp-tl-topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
 .cp-tl-info { font-size:13px; font-weight:500; color:#374151; }
-.cp-leg { display:flex; align-items:center; gap:5px; font-size:12px; color:#6b7280; }
+.cp-leg { display:flex; align-items:center; font-size:12px; color:#6b7280; }
+.cp-leg > * + * { margin-left:5px; }
 .cp-swatch { display:inline-block; width:16px; height:10px; border-radius:3px; }
 .cp-swatch-occ { background:repeating-linear-gradient(45deg,#d1d5db,#d1d5db 3px,#e5e7eb 3px,#e5e7eb 7px); border:1px solid #9ca3af; }
 .cp-swatch-sel { background:#2563eb; }
@@ -633,7 +639,8 @@ export default {
 
 .cp-row { display:flex; align-items:stretch; border-bottom:1px solid #f3f4f6; min-height:60px; }
 .cp-row:last-child { border-bottom:none; }
-.cp-room-col { flex-direction:column; justify-content:center; align-items:flex-start; gap:2px; }
+.cp-room-col { flex-direction:column; justify-content:center; align-items:flex-start; }
+.cp-room-col > * + * { margin-top:2px; }
 .cp-rnum { font-size:13px; font-weight:600; color:#374151; }
 .cp-rinfo { font-size:11px; color:#9ca3af; }
 
@@ -664,4 +671,6 @@ export default {
 .cp-sel-bar-text { font-size:13px; color:#166534; }
 .cp-sel-bar-text b { font-weight:700; }
 .cp-sel-placeholder { font-size:13px; color:#9ca3af; font-style:italic; }
+.cp-flex-12 { display: flex; align-items: center; }
+.cp-flex-12 > * + * { margin-left: 12px; }
 </style>

@@ -237,7 +237,7 @@ export default {
 /* ── 欢迎横幅 ── */
 .mms-hero {
   position: relative;
-  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+  background: linear-gradient(135deg, #2563eb 0%, #60a5fa 100%);
   border-radius: 14px;
   padding: 28px 36px;
   margin-bottom: 24px;

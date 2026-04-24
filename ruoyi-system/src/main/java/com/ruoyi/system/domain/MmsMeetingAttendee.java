@@ -27,6 +27,12 @@ public class MmsMeetingAttendee implements Serializable
     /** 所属部门 */
     private String deptName;
 
+    /** 参会人邮箱 */
+    private String email;
+
+    /** 是否邮件通知：0否 1是 */
+    private String notifyEmail;
+
     /** 是否转派：0否 1是 */
     private String isDelegate;
 
@@ -51,6 +57,12 @@ public class MmsMeetingAttendee implements Serializable
     public String getDeptName() { return deptName; }
     public void setDeptName(String deptName) { this.deptName = deptName; }
 
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public String getNotifyEmail() { return notifyEmail; }
+    public void setNotifyEmail(String notifyEmail) { this.notifyEmail = notifyEmail; }
+
     public String getIsDelegate() { return isDelegate; }
     public void setIsDelegate(String isDelegate) { this.isDelegate = isDelegate; }
 
@@ -67,6 +79,8 @@ public class MmsMeetingAttendee implements Serializable
             .append("meetingId", getMeetingId())
             .append("userId", getUserId())
             .append("userName", getUserName())
+            .append("email", getEmail())
+            .append("notifyEmail", getNotifyEmail())
             .toString();
     }
 }

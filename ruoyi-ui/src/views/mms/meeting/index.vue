@@ -37,10 +37,10 @@
     <!-- 工具栏 -->
     <div class="mm-toolbar">
       <span class="mm-list-title">会议记录列表</span>
-      <div style="display:flex;gap:8px;align-items:center">
+      <div class="mm-flex-row">
         <el-button size="mini" :icon="showSearch?'el-icon-arrow-up':'el-icon-search'"
           @click="showSearch=!showSearch" plain>筛选</el-button>
-        <el-button type="primary" size="small" @click="$router.push('/mms/booking')">+ 新建会议</el-button>
+        <el-button type="primary" size="small" style="margin-left:8px" @click="$router.push('/mms/booking')">+ 新建会议</el-button>
       </div>
     </div>
 
@@ -321,7 +321,8 @@ export default {
 .st-2 { background: #d1fae5; color: #065f46; }
 
 /* ── 操作按钮 ── */
-.mm-td.th-actions { display: flex; gap: 5px; align-items: center; }
+.mm-td.th-actions { display: flex; align-items: center; }
+.mm-td.th-actions > * + * { margin-left: 5px; }
 .mm-btn {
   display: inline-flex; align-items: center;
   font-size: 12px; padding: 4px 11px; border-radius: 5px;
@@ -336,9 +337,11 @@ export default {
 .mm-empty { text-align: center; color: #9ca3af; padding: 48px 0; font-size: 13px; }
 
 /* ── 详情弹窗 ── */
-.dd-header { display: flex; flex-direction: column; gap: 6px; }
+.dd-header { display: flex; flex-direction: column; }
+.dd-header > * + * { margin-top: 6px; }
 .dd-title { font-size: 18px; font-weight: 700; color: #1f2937; line-height: 1.3; }
-.dd-tags { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.dd-tags { display: flex; align-items: center; flex-wrap: wrap; margin-left: -6px; margin-top: -6px; }
+.dd-tags > * { margin-left: 6px; margin-top: 6px; }
 
 .dd-status-tag {
   display: inline-block; font-size: 11px; padding: 2px 10px;
@@ -365,9 +368,10 @@ export default {
 
 .dd-info-list { margin-bottom: 16px; }
 .dd-info-row {
-  display: flex; align-items: flex-start; gap: 10px;
+  display: flex; align-items: flex-start;
   padding: 8px 0; border-bottom: 1px solid #f3f4f6; font-size: 13px;
 }
+.dd-info-row > * + * { margin-left: 10px; }
 .dd-info-row:last-child { border-bottom: none; }
 .dd-info-label { width: 80px; flex-shrink: 0; color: #9ca3af; }
 .dd-info-label i { margin-right: 4px; }
@@ -378,12 +382,14 @@ export default {
 }
 .dd-section-title { font-size: 12px; font-weight: 600; color: #6b7280; margin-bottom: 10px; }
 
-.dd-attendees { display: flex; flex-wrap: wrap; gap: 8px; }
+.dd-attendees { display: flex; flex-wrap: wrap; margin-left: -8px; margin-top: -8px; }
+.dd-attendees > * { margin-left: 8px; margin-top: 8px; }
 .dd-attendee {
-  display: inline-flex; align-items: center; gap: 4px;
+  display: inline-flex; align-items: center;
   font-size: 13px; padding: 4px 12px; border-radius: 20px;
   background: #fff; border: 1px solid #e5e7eb; color: #374151; font-weight: 500;
 }
+.dd-attendee > * + * { margin-left: 4px; }
 .dd-attendee.is-delegate { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
 
 .dd-empty-small { font-size: 13px; color: #9ca3af; }
@@ -391,5 +397,7 @@ export default {
 .dd-footer {
   display: flex; align-items: center; justify-content: space-between;
 }
-.dd-footer > div { display: flex; gap: 8px; }
+.dd-footer > div { display: flex; }
+.dd-footer > div > * + * { margin-left: 8px; }
+.mm-flex-row { display: flex; align-items: center; }
 </style>

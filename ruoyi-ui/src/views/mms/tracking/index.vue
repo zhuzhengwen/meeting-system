@@ -27,7 +27,7 @@
 
     <!-- 工具栏 -->
     <div class="mm-toolbar">
-      <div style="display:flex;align-items:center;gap:14px">
+      <div class="mm-flex-row mm-flex-14">
         <span class="mm-list-title">会议跟踪事项</span>
         <span class="mm-stat-group">
           <span class="mm-stat">跟进中 <b class="mm-stat-n mm-stat-orange">{{ inProgressCount }}</b></span>
@@ -35,7 +35,7 @@
           <span class="mm-stat">已结案 <b class="mm-stat-n">{{ closedCount }}</b></span>
         </span>
       </div>
-      <div style="display:flex;gap:8px;align-items:center">
+      <div class="mm-flex-row mm-flex-8">
         <el-button size="mini" :icon="showSearch?'el-icon-arrow-up':'el-icon-search'"
           @click="showSearch=!showSearch" plain>筛选</el-button>
         <el-button type="primary" size="small" icon="el-icon-plus"
@@ -193,7 +193,7 @@
           <el-select v-model="addForm.meetingId" placeholder="请选择关联会议（可选）" filterable clearable
             style="width:100%" :loading="meetingLoading" @change="onMeetingSelect" @clear="onMeetingClear">
             <el-option v-for="m in myMeetings" :key="m.meetingId" :value="m.meetingId" :label="m.title">
-              <div style="display:flex;justify-content:space-between;align-items:center;gap:16px">
+              <div style="display:flex;justify-content:space-between;align-items:center">
                 <span style="font-weight:500">{{ m.title }}</span>
                 <span style="font-size:11px;color:#9ca3af;white-space:nowrap">{{ fmtMeetingTime(m.startTime) }}</span>
               </div>
@@ -460,7 +460,8 @@ export default {
   display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;
 }
 .mm-list-title { font-size: 15px; font-weight: 600; color: #1f2937; }
-.mm-stat-group { display: flex; align-items: center; gap: 6px; }
+.mm-stat-group { display: flex; align-items: center; }
+.mm-stat-group > * + * { margin-left: 6px; }
 .mm-stat { font-size: 13px; color: #6b7280; }
 .mm-stat-n { font-weight: 700; color: #374151; }
 .mm-stat-orange { color: #d97706; }
@@ -518,7 +519,8 @@ export default {
 .mm-report   { font-size: 12px; color: #374151; line-height: 1.6; white-space: pre-wrap; word-break: break-all; }
 .mm-director { font-size: 12px; color: #d97706; line-height: 1.6; white-space: pre-wrap; word-break: break-all; }
 
-.mm-progress-list { display: flex; flex-direction: column; gap: 3px; }
+.mm-progress-list { display: flex; flex-direction: column; }
+.mm-progress-list > * + * { margin-top: 3px; }
 .mm-progress-line { font-size: 12px; color: #1d4ed8; line-height: 1.6; word-break: break-all; }
 .mm-prog-date { font-weight: 600; white-space: nowrap; }
 .mm-empty-val { color: #d1d5db; font-size: 13px; }
@@ -538,7 +540,8 @@ export default {
 .st-closed { background: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb; }
 
 /* ── 操作按钮 ── */
-.mm-td.th-actions { display: flex; gap: 4px; align-items: flex-start; flex-wrap: nowrap; }
+.mm-td.th-actions { display: flex; align-items: flex-start; flex-wrap: nowrap; }
+.mm-td.th-actions > * + * { margin-left: 4px; }
 .mm-btn {
   display: inline-flex; align-items: center;
   font-size: 12px; padding: 4px 10px; border-radius: 5px;
@@ -562,8 +565,9 @@ export default {
 .trk-text-amber { background: #fffbeb; border-color: #fcd34d; color: #d97706; }
 .trk-progress-detail { display: flex; flex-direction: column; }
 .trk-prog-detail-item {
-  display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px solid #f3f4f6;
+  display: flex; padding: 8px 0; border-bottom: 1px solid #f3f4f6;
 }
+.trk-prog-detail-item > * + * { margin-left: 12px; }
 .trk-prog-detail-item:last-child { border-bottom: none; }
 .trk-prog-detail-date { font-size: 12px; color: #9ca3af; white-space: nowrap; min-width: 50px; }
 .trk-prog-detail-content { font-size: 13px; color: #374151; white-space: pre-wrap; line-height: 1.6; }
@@ -571,10 +575,12 @@ export default {
 
 /* ── 详情 & 进度弹窗共用 ── */
 .pd-meta-row {
-  display: flex; align-items: center; gap: 24px;
-  padding: 10px 0 14px; border-bottom: 1px solid #f3f4f6; margin-bottom: 14px;
+  display: flex; align-items: center;
+  padding: 10px 0 14px; border-bottom: 1px solid #f3f4f6; margin-bottom: 14px; margin-left: -24px;
 }
-.pd-meta-item { display: flex; align-items: center; gap: 6px; }
+.pd-meta-row > * { margin-left: 24px; }
+.pd-meta-item { display: flex; align-items: center; }
+.pd-meta-item > * + * { margin-left: 6px; }
 .pd-meta-label { font-size: 12px; color: #9ca3af; }
 .pd-meta-val { font-size: 13px; color: #374151; font-weight: 500; }
 
@@ -603,4 +609,7 @@ export default {
 .pd-hist-date { font-weight: 700; }
 .pd-divider { height: 1px; background: #e5e7eb; margin: 16px 0; }
 .pd-form >>> .el-form-item__label { white-space: nowrap; }
+.mm-flex-row { display: flex; align-items: center; }
+.mm-flex-8 > * + * { margin-left: 8px; }
+.mm-flex-14 > * + * { margin-left: 14px; }
 </style>

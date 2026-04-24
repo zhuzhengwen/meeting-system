@@ -4,6 +4,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,11 +21,17 @@ import com.ruoyi.system.service.IMmsMeetingService;
 @Service
 public class MmsMeetingServiceImpl implements IMmsMeetingService
 {
+    private static final Logger log = LoggerFactory.getLogger(MmsMeetingServiceImpl.class);
+
     @Autowired
     private MmsMeetingMapper meetingMapper;
 
     @Autowired
     private BpmProperties bpmProperties;
+
+    /** 邮件服务（可选，未配置 mms.mail.enabled=true 时为 null） */
+    @Autowired(required = false)
+    private MmsEmailService emailService;
 
     @Override
     public MmsMeeting selectMeetingById(Long meetingId) {
@@ -36,7 +44,6 @@ public class MmsMeetingServiceImpl implements IMmsMeetingService
 
     @Override
     public List<MmsMeeting> selectMeetingList(MmsMeeting meeting) {
-
         return meetingMapper.selectByCondition(meeting);
     }
 
@@ -48,18 +55,17 @@ public class MmsMeetingServiceImpl implements IMmsMeetingService
     @Override
     @Transactional
     public int insertMeeting(MmsMeeting meeting) {
-        // 生成唯一会议编号
         if (meeting.getMeetingNo() == null || meeting.getMeetingNo().isEmpty()) {
             String dateStr = new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date());
             String suffix  = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
             meeting.setMeetingNo("MTG-" + dateStr + "-" + suffix);
         }
-        // BPM 启用时默认"待审批"，否则直接"已确认"
         if (meeting.getStatus() == null || meeting.getStatus().isEmpty()) {
             meeting.setStatus(bpmProperties.isEnabled() ? "3" : "0");
         }
         int rows = meetingMapper.insert(meeting);
         insertAttendees(meeting);
+        sendEmailAsync(meeting);
         return rows;
     }
 
@@ -68,7 +74,9 @@ public class MmsMeetingServiceImpl implements IMmsMeetingService
     public int updateMeeting(MmsMeeting meeting) {
         meetingMapper.deleteAttendeesByMeetingId(meeting.getMeetingId());
         insertAttendees(meeting);
-        return meetingMapper.updateById(meeting);
+        int rows = meetingMapper.updateById(meeting);
+        sendEmailAsync(meeting);
+        return rows;
     }
 
     @Override
@@ -109,20 +117,29 @@ public class MmsMeetingServiceImpl implements IMmsMeetingService
     }
 
     private void insertAttendees(MmsMeeting meeting) {
-        if (meeting.getAttendees() != null && !meeting.getAttendees().isEmpty()) {
-            for (MmsMeetingAttendee attendee : meeting.getAttendees()) {
-                attendee.setMeetingId(meeting.getMeetingId());
-                if (attendee.getIsDelegate() == null) {
-                    attendee.setIsDelegate("0");
-                }
-                if (attendee.getDelegateFrom() == null) {
-                    attendee.setDelegateFrom("");
-                }
-                if (attendee.getDelegateNote() == null) {
-                    attendee.setDelegateNote("");
-                }
-                meetingMapper.insertAttendee(attendee);
-            }
+        if (meeting.getAttendees() == null || meeting.getAttendees().isEmpty()) return;
+        for (MmsMeetingAttendee attendee : meeting.getAttendees()) {
+            attendee.setMeetingId(meeting.getMeetingId());
+            if (attendee.getIsDelegate()   == null) attendee.setIsDelegate("0");
+            if (attendee.getDelegateFrom() == null) attendee.setDelegateFrom("");
+            if (attendee.getDelegateNote() == null) attendee.setDelegateNote("");
+            if (attendee.getEmail()        == null) attendee.setEmail("");
+            if (attendee.getNotifyEmail()  == null) attendee.setNotifyEmail("0");
+            meetingMapper.insertAttendee(attendee);
         }
+    }
+
+    /** 异步发送邮件（捕获异常，不阻断主流程） */
+    private void sendEmailAsync(MmsMeeting meeting) {
+        if (emailService == null || meeting.getAttendees() == null) return;
+        final MmsMeeting m = meeting;
+        final List<MmsMeetingAttendee> attendees = meeting.getAttendees();
+        new Thread(() -> {
+            try {
+                emailService.sendMeetingInvitations(m, attendees);
+            } catch (Exception e) {
+                log.warn("邮件发送线程异常: {}", e.getMessage());
+            }
+        }, "mms-mail-" + meeting.getMeetingId()).start();
     }
 }

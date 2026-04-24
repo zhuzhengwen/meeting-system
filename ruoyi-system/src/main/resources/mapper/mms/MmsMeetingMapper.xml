@@ -108,10 +108,10 @@
 
     <insert id="insertAttendee" parameterType="com.ruoyi.system.domain.MmsMeetingAttendee">
         insert into mms_meeting_attendee
-            (meeting_id, user_id, user_name, dept_name, is_delegate, delegate_from, delegate_note)
+            (meeting_id, user_id, user_name, dept_name, email, notify_email, is_delegate, delegate_from, delegate_note)
         values
             (#{meetingId}, #{userId}, #{userName}, #{deptName},
-             #{isDelegate}, #{delegateFrom}, #{delegateNote})
+             #{email}, #{notifyEmail}, #{isDelegate}, #{delegateFrom}, #{delegateNote})
     </insert>
 
     <delete id="deleteAttendeesByMeetingId" parameterType="Long">

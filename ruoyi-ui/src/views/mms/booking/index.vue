@@ -83,7 +83,7 @@
             <strong style="font-size:15px">{{ booking.campus }} — {{ booking.date }}</strong>
             <span style="font-size:12px;color:#9ca3af;margin-left:10px">在排程上拖拽选择时段</span>
           </div>
-          <div style="display:flex;gap:8px;align-items:center">
+          <div class="bk-legend-row">
             <span class="bk-legend-chip occupied">已占用</span>
             <span class="bk-legend-chip selecting">选中</span>
             <el-button size="mini" @click="clearSelection">清除选择</el-button>
@@ -259,32 +259,123 @@
             <el-input v-model="meetingForm.title" placeholder="请输入会议名称" />
           </el-form-item>
           <el-row :gutter="14">
-            <el-col :span="8">
+            <el-col :span="12">
               <el-form-item label="会议类型" prop="category">
                 <el-select v-model="meetingForm.category" style="width:100%">
                   <el-option v-for="c in categories" :key="c" :label="c" :value="c" />
                 </el-select>
               </el-form-item>
             </el-col>
-            <el-col :span="8">
+            <el-col :span="12">
               <el-form-item label="会议频率" prop="frequency">
                 <el-select v-model="meetingForm.frequency" style="width:100%">
                   <el-option v-for="f in frequencies" :key="f" :label="f" :value="f" />
                 </el-select>
               </el-form-item>
             </el-col>
-            <el-col :span="8">
-              <el-form-item label="主持人">
-                <el-input v-model="meetingForm.hostName" placeholder="主持人姓名" />
-              </el-form-item>
-            </el-col>
           </el-row>
+          <el-form-item label="主持人">
+            <el-autocomplete
+              v-model="meetingForm.hostName"
+              :fetch-suggestions="searchHostUsers"
+              placeholder="姓名，或搜索LDAP账号"
+              :trigger-on-focus="false"
+              style="width:100%"
+              popper-class="bk-host-dropdown"
+              @select="onHostSelect"
+            >
+              <template slot-scope="{ item }">
+                <div class="bk-host-option">
+                  <span class="bk-user-name">{{ item.label }}</span>
+                  <span class="bk-user-account">{{ item.userName }}</span>
+                  <i v-if="item.email" class="el-icon-message bk-user-email-icon" :title="item.email"></i>
+                </div>
+              </template>
+            </el-autocomplete>
+          </el-form-item>
           <el-form-item label="主导部门">
             <el-input v-model="meetingForm.leadDept" placeholder="主导部门（可选）" />
           </el-form-item>
           <el-form-item label="参会人员">
-            <el-input v-model="meetingForm.attendeesText" type="textarea" :rows="2"
-              placeholder="参会人姓名，逗号分隔（如：张三,李四,王五）" />
+            <el-select
+              v-model="meetingForm.attendees"
+              multiple
+              filterable
+              remote
+              reserve-keyword
+              value-key="userId"
+              placeholder="搜索LDAP账号，或直接输入姓名回车手动添加"
+              :remote-method="searchUsers"
+              :loading="userSearchLoading"
+              style="width:100%"
+              popper-class="bk-user-dropdown"
+              @visible-change="onAttendeeDropdownToggle"
+            >
+              <!-- LDAP 搜索结果 -->
+              <el-option
+                v-for="u in userOptions"
+                :key="u.userId"
+                :label="u.nickName || u.userName"
+                :value="u"
+              >
+                <div class="bk-user-option">
+                  <i class="el-icon-user bk-ldap-icon"></i>
+                  <span class="bk-user-name">{{ u.nickName || u.userName }}</span>
+                  <span class="bk-user-account">{{ u.userName }}</span>
+                  <span v-if="u.dept" class="bk-user-dept">{{ u.dept.deptName }}</span>
+                  <i v-if="u.email" class="el-icon-message bk-user-email-icon" :title="u.email"></i>
+                </div>
+              </el-option>
+              <!-- 手动添加选项：有输入内容时显示 -->
+              <el-option
+                v-if="userSearchKeyword.trim()"
+                key="__manual__"
+                :label="userSearchKeyword.trim()"
+                :value="{ userId: '__m_' + userSearchKeyword.trim(), userName: userSearchKeyword.trim(), nickName: userSearchKeyword.trim(), email: '', source: 'manual' }"
+                class="bk-manual-option"
+              >
+                <div class="bk-user-option">
+                  <i class="el-icon-edit-outline bk-manual-icon"></i>
+                  <span class="bk-manual-label">手动添加「{{ userSearchKeyword.trim() }}」</span>
+                  <span class="bk-manual-tip">无邮箱，不发通知</span>
+                </div>
+              </el-option>
+            </el-select>
+            <!-- 已选参会人 tag 列表 -->
+            <div v-if="meetingForm.attendees.length" class="bk-attendee-tags">
+              <el-tag
+                v-for="u in meetingForm.attendees"
+                :key="u.userId"
+                closable
+                size="small"
+                :type="u.source === 'manual' ? 'info' : (u.email ? '' : 'warning')"
+                @close="removeAttendee(u)"
+              >
+                <i :class="u.source === 'manual' ? 'el-icon-edit-outline' : 'el-icon-user'" style="margin-right:3px;font-size:11px"></i>
+                {{ u.nickName || u.userName }}
+                <span v-if="u.email" class="bk-tag-email">· {{ u.email }}</span>
+              </el-tag>
+            </div>
+          </el-form-item>
+
+          <el-form-item label="邮件通知">
+            <div class="bk-notify-row">
+              <el-switch
+                v-model="meetingForm.notifyByEmail"
+                active-text="通知参会人"
+                inactive-text="不通知"
+              />
+              <template v-if="meetingForm.notifyByEmail">
+                <span v-if="attendeesWithEmail > 0" class="bk-notify-hint">
+                  <i class="el-icon-message"></i>
+                  将向 {{ attendeesWithEmail }} 位 LDAP 参会人发送邀请邮件
+                </span>
+                <span v-else class="bk-notify-warn">
+                  <i class="el-icon-warning"></i>
+                  当前无可通知参会人（手动添加的成员没有邮箱）
+                </span>
+              </template>
+            </div>
           </el-form-item>
           <el-form-item label="会议说明">
             <el-input v-model="meetingForm.description" type="textarea" :rows="3"
@@ -307,6 +398,7 @@
 <script>
 import { allRooms } from '@/api/mms/room'
 import { addMeeting, getMeetingSchedule } from '@/api/mms/meeting'
+import { listUser } from '@/api/system/user'
 
 const START_HOUR = 8    // 时间轴起始小时
 const END_HOUR   = 21   // 时间轴结束小时（可预约到 21:00）
@@ -346,7 +438,11 @@ export default {
         finalEndMins: null,
         selectedRoomId: null
       },
-      meetingForm: { title: '', category: '周边', frequency: '单次', hostName: '', leadDept: '', attendeesText: '', description: '', tencentId: '' },
+      meetingForm: { title: '', category: '周边', frequency: '单次', hostName: '', leadDept: '', attendees: [], notifyByEmail: false, description: '', tencentId: '' },
+      userOptions: [],
+      userSearchLoading: false,
+      userSearchTimer: null,
+      userSearchKeyword: '',
       infoRules: {
         title: [{ required: true, message: '会议标题不能为空', trigger: 'blur' }],
         category: [{ required: true, message: '请选择会议类型', trigger: 'change' }]
@@ -366,6 +462,9 @@ export default {
     }
   },
   computed: {
+    attendeesWithEmail() {
+      return this.meetingForm.attendees.filter(u => u.source === 'ldap' && u.email && u.email.trim()).length
+    },
     stepIndex() {
       if (this.meetingType === '1') return this.step === 1 ? 0 : 1
       return this.step - 1
@@ -633,6 +732,47 @@ export default {
       return r ? r.roomNumber : ''
     },
 
+    // ── 参会人搜索 ────────────────────────────────────────────────
+    searchUsers(keyword) {
+      this.userSearchKeyword = keyword || ''
+      if (!keyword || keyword.trim().length < 1) { this.userOptions = []; return }
+      clearTimeout(this.userSearchTimer)
+      this.userSearchTimer = setTimeout(() => {
+        this.userSearchLoading = true
+        listUser({ userName: keyword.trim(), pageNum: 1, pageSize: 20 }).then(res => {
+          this.userOptions = (res.rows || [])
+            .filter(u => u.status === '0')
+            .map(u => ({ ...u, source: 'ldap' }))
+        }).finally(() => { this.userSearchLoading = false })
+      }, 300)
+    },
+    onAttendeeDropdownToggle(visible) {
+      if (!visible) this.userSearchKeyword = ''
+    },
+    removeAttendee(user) {
+      this.meetingForm.attendees = this.meetingForm.attendees.filter(u => u.userId !== user.userId)
+    },
+
+    // ── 主持人搜索（el-autocomplete） ────────────────────────────
+    searchHostUsers(query, callback) {
+      if (!query || query.trim().length < 1) { callback([]); return }
+      listUser({ userName: query.trim(), pageNum: 1, pageSize: 10 }).then(res => {
+        const list = (res.rows || [])
+          .filter(u => u.status === '0')
+          .map(u => ({
+            value:    u.nickName || u.userName,
+            label:    u.nickName || u.userName,
+            userName: u.userName,
+            email:    u.email || '',
+            deptName: u.dept ? u.dept.deptName : ''
+          }))
+        callback(list)
+      }).catch(() => callback([]))
+    },
+    onHostSelect(item) {
+      this.meetingForm.hostName = item.label
+    },
+
     // ── 提交 ──────────────────────────────────────────────────────
     submitBooking() {
       this.$refs.infoForm.validate(valid => {
@@ -652,9 +792,16 @@ export default {
         const start = new Date(baseDate.getTime() + (START_HOUR * 60 + startMins) * 60000)
         const end   = new Date(baseDate.getTime() + (START_HOUR * 60 + endMins)   * 60000)
         const room = this.campusRooms.find(r => r.roomId === this.booking.selectedRoomId)
-        const attendees = (this.meetingForm.attendeesText || '')
-          .split(',').map(n => n.trim()).filter(Boolean)
-          .map(name => ({ userName: name, userId: '', deptName: '', isDelegate: '0', delegateFrom: '', delegateNote: '' }))
+        const attendees = this.meetingForm.attendees.map(u => ({
+          userId:       u.userName || '',
+          userName:     u.nickName || u.userName || '',
+          deptName:     (u.dept && u.dept.deptName) || '',
+          email:        u.email || '',
+          notifyEmail:  (this.meetingForm.notifyByEmail && u.source === 'ldap' && u.email) ? '1' : '0',
+          isDelegate:   '0',
+          delegateFrom: '',
+          delegateNote: ''
+        }))
 
         addMeeting({
           title: this.meetingForm.title,
@@ -686,6 +833,45 @@ export default {
 <style scoped>
 /* ── 通用 ── */
 .mms-page-header { display:flex;align-items:center;justify-content:space-between;margin-bottom:16px; }
+
+/* ── 参会人选择器 ── */
+.bk-attendee-tags {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.bk-attendee-tags .el-tag { max-width: 220px; }
+.bk-tag-email {
+  font-size: 11px;
+  color: #9ca3af;
+  margin-left: 4px;
+  font-style: italic;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 120px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* ── 邮件通知行 ── */
+.bk-notify-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.bk-notify-hint {
+  font-size: 12px;
+  color: #2563eb;
+}
+.bk-notify-hint .el-icon-info { margin-right: 3px; }
+.bk-notify-warn {
+  font-size: 12px;
+  color: #d97706;
+}
+.bk-notify-warn .el-icon-warning { margin-right: 3px; }
 
 /* ── 步骤条 ── */
 .bk-steps {
@@ -740,19 +926,22 @@ export default {
 }
 
 /* ── 模式按钮 ── */
-.bk-mode-bar { display:flex;gap:8px;margin-bottom:20px; }
+.bk-mode-bar { display:flex;margin-left:-8px;margin-bottom:20px; }
+.bk-mode-bar > * { margin-left:8px; }
 .bk-mode-btn {
   padding:8px 20px; border-radius:6px; border:1.5px solid #d1d5db;
   background:#fff; cursor:pointer; font-size:14px; color:#374151;
-  transition:all .2s; display:flex; align-items:center; gap:6px;
+  transition:all .2s; display:flex; align-items:center;
 }
+.bk-mode-btn > * + * { margin-left:6px; }
 .bk-mode-btn.active { border-color:#1a56db; background:#e1eafe; color:#1a56db; font-weight:600; }
 
 /* ── 工具栏 ── */
 .bk-toolbar {
   display:flex; align-items:center; justify-content:space-between;
-  margin-bottom:14px; flex-wrap:wrap; gap:8px;
+  margin-bottom:14px; flex-wrap:wrap; margin-left:-8px; margin-top:-8px;
 }
+.bk-toolbar > * { margin-left:8px; margin-top:8px; }
 .bk-legend-chip { font-size:12px; padding:3px 12px; border-radius:10px; font-weight:500; }
 .bk-legend-chip.occupied {
   background:repeating-linear-gradient(45deg,#e5e7eb,#e5e7eb 3px,#f9fafb 3px,#f9fafb 8px);
@@ -794,15 +983,18 @@ export default {
 
 /* ── 筛选栏 ── */
 .bk-filter-bar {
-  display: flex; align-items: center; flex-wrap: wrap; gap: 10px;
+  display: flex; align-items: center; flex-wrap: wrap; margin-left: -10px; margin-top: -10px;
   background: #f8faff; border: 1px solid #e0e8ff;
   border-radius: 8px; padding: 10px 14px; margin-bottom: 14px;
 }
+.bk-filter-bar > * { margin-left: 10px; margin-top: 10px; }
 .bk-filter-label {
   font-size: 12px; font-weight: 600; color: #1a56db;
-  display: flex; align-items: center; gap: 4px; flex-shrink: 0;
+  display: flex; align-items: center; flex-shrink: 0;
 }
-.bk-filter-group { display: flex; align-items: center; gap: 6px; }
+.bk-filter-label > * + * { margin-left: 4px; }
+.bk-filter-group { display: flex; align-items: center; }
+.bk-filter-group > * + * { margin-left: 6px; }
 .bk-filter-chip {
   font-size: 12px; padding: 3px 10px; border-radius: 20px; cursor: pointer;
   border: 1px solid #e5e7eb; background: #fff; color: #6b7280;
@@ -825,17 +1017,19 @@ export default {
 .bk-room-col {
   width: 150px; flex-shrink: 0;
   padding: 0 10px 0 6px;
-  display: flex; flex-direction: column; justify-content: center; gap: 3px;
+  display: flex; flex-direction: column; justify-content: center;
   border-right: 2px solid #e5e7eb;
   cursor: default;
 }
+.bk-room-col > * + * { margin-top: 3px; }
 .bk-room-number {
   font-size: 14px; font-weight: 700; color: #1f2937;
 }
 .bk-room-meta {
   font-size: 11px; color: #9ca3af;
-  display: flex; align-items: center; gap: 3px;
+  display: flex; align-items: center;
 }
+.bk-room-meta > * + * { margin-left: 3px; }
 .bk-meta-dot { margin: 0 1px; }
 
 /* ── Popover 内容 ── */
@@ -848,35 +1042,41 @@ export default {
 .bk-pop-cap {
   font-size: 12px; color: #6b7280; background: #f1f5f9;
   padding: 2px 8px; border-radius: 10px;
-  display: flex; align-items: center; gap: 4px;
+  display: flex; align-items: center;
 }
+.bk-pop-cap > * + * { margin-left: 4px; }
 .bk-pop-divider { height: 1px; background: #f1f5f9; margin-bottom: 10px; }
 .bk-pop-section-label {
   font-size: 11px; font-weight: 600; color: #9ca3af;
   text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px;
 }
 .bk-pop-equip {
-  display: flex; flex-wrap: wrap; gap: 6px;
-  .bk-equip-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; }
+  display: flex; flex-wrap: wrap; margin-left: -6px; margin-top: -6px;
 }
+.bk-pop-equip > * { margin-left: 6px; margin-top: 6px; }
+.bk-pop-equip .bk-equip-tag { display: inline-flex; align-items: center; font-size: 11px; }
+.bk-pop-equip .bk-equip-tag > * + * { margin-left: 4px; }
 .bk-pop-empty { font-size: 12px; color: #9ca3af; font-style: italic; }
 
 /* ── 左列触发区 ── */
 .bk-room-col {
   width: 150px; flex-shrink: 0;
   padding: 0 10px 0 8px;
-  display: flex; flex-direction: column; justify-content: center; gap: 3px;
+  display: flex; flex-direction: column; justify-content: center;
   border-right: 2px solid #e5e7eb;
   cursor: default;
 }
+.bk-room-col > * + * { margin-top: 3px; }
 .bk-room-number { font-size: 13px; font-weight: 700; color: #1f2937; }
 .bk-room-cap-badge {
-  display: inline-flex; align-items: center; gap: 3px;
+  display: inline-flex; align-items: center;
   font-size: 11px; color: #6b7280;
 }
+.bk-room-cap-badge > * + * { margin-left: 3px; }
 .bk-room-eq-dots {
-  display: flex; align-items: center; gap: 3px; flex-wrap: wrap;
+  display: flex; align-items: center; flex-wrap: wrap; margin-left: -3px; margin-top: -3px;
 }
+.bk-room-eq-dots > * { margin-left: 3px; margin-top: 3px; }
 .bk-dot {
   width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
   &.eq-display { background: #3b82f6; }
@@ -887,7 +1087,8 @@ export default {
   &.eq-default { background: #9ca3af; }
 }
 .bk-dot-more { font-size: 10px; color: #9ca3af; line-height: 1; }
-.bk-room-meta  { font-size: 11px; color: #9ca3af; display: flex; align-items: center; gap: 3px; }
+.bk-room-meta  { font-size: 11px; color: #9ca3af; display: flex; align-items: center; }
+.bk-room-meta > * + * { margin-left: 3px; }
 .bk-meta-dot   { margin: 0 1px; }
 
 /* 设备标签（popover + 筛选共用） */
@@ -967,16 +1168,41 @@ export default {
 .bk-sel-infobar {
   display:flex; align-items:center; justify-content:space-between;
   background:#dcfce7; border-radius:6px; padding:10px 16px; margin-top:14px;
-  font-size:14px; color:#166534; flex-wrap:wrap; gap:8px;
+  font-size:14px; color:#166534; flex-wrap:wrap; margin-left:-8px; margin-top:calc(14px - 8px);
   border: 1px solid #86efac;
 }
+.bk-sel-infobar > * { margin-left:8px; margin-top:8px; }
 
 /* ── 预约摘要 ── */
 .bk-summary {
-  display:grid; grid-template-columns:repeat(3,1fr); gap:12px;
+  display:grid; grid-template-columns:repeat(3,1fr); grid-gap:12px;
   background:#f9fafb; border-radius:8px; padding:14px; margin-bottom:20px;
   border:1px solid #e5e7eb;
 }
 .bk-summary-label { font-size:11px; color:#9ca3af; display:block; }
 .bk-summary-val   { font-size:14px; font-weight:600; color:#1f2937; }
+.bk-legend-row { display: flex; align-items: center; }
+.bk-legend-row > * + * { margin-left: 8px; }
+</style>
+
+<style>
+/* ── 参会人 / 主持人 下拉通用（不受 scoped 约束） ── */
+.bk-user-option, .bk-host-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  overflow: hidden;
+}
+.bk-user-name    { font-size: 14px; color: #111827; flex-shrink: 0; }
+.bk-user-account { font-size: 12px; color: #9ca3af; flex-shrink: 0; }
+.bk-user-dept    { font-size: 12px; color: #6b7280; margin-left: auto; flex-shrink: 0; }
+.bk-user-email-icon { font-size: 12px; color: #2563eb; flex-shrink: 0; }
+.bk-ldap-icon    { font-size: 12px; color: #2563eb; flex-shrink: 0; }
+
+/* 手动添加选项 */
+.bk-user-dropdown .bk-manual-option { border-top: 1px dashed #e5e7eb; }
+.bk-manual-icon  { font-size: 13px; color: #9ca3af; flex-shrink: 0; }
+.bk-manual-label { font-size: 14px; color: #374151; }
+.bk-manual-tip   { font-size: 11px; color: #d97706; margin-left: auto; flex-shrink: 0; }
 </style>

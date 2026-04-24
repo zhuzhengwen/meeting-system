@@ -349,21 +349,22 @@ export default {
 /* ── 欢迎横幅 ── */
 .mms-welcome {
   display: flex; align-items: center; justify-content: space-between;
-  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+  background: linear-gradient(135deg, #2563eb 0%, #60a5fa 100%);
   border-radius: 12px; padding: 20px 28px; margin-bottom: 20px;
   box-shadow: 0 4px 16px rgba(37,99,235,.3);
 }
 .mms-greeting { font-size: 20px; font-weight: 700; color: #fff; }
 .mms-uname { color: #bfdbfe; }
 .mms-today-str { font-size: 13px; color: rgba(255,255,255,.65); margin-top: 4px; }
-.mms-actions { display: flex; gap: 10px; }
+.mms-actions { display: flex; }
+.mms-actions > * + * { margin-left: 10px; }
 .mms-actions .el-button { border-radius: 6px; }
 
 /* ── KPI 卡片 ── */
 .mms-kpi-row {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 14px; margin-bottom: 20px;
+  grid-gap: 14px; margin-bottom: 20px;
 }
 @media (max-width: 1200px) { .mms-kpi-row { grid-template-columns: repeat(3,1fr); } }
 
@@ -371,11 +372,12 @@ export default {
   background: #fff;
   border-radius: 10px;
   padding: 18px 20px;
-  display: flex; align-items: center; gap: 14px;
+  display: flex; align-items: center;
   box-shadow: 0 1px 4px rgba(0,0,0,.06);
   border-left: 4px solid var(--c);
   transition: box-shadow .15s;
 }
+.mms-kpi-card > * + * { margin-left: 14px; }
 .mms-kpi-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,.1); }
 
 .mms-kpi-icon-wrap {
@@ -391,7 +393,7 @@ export default {
 .mms-grid {
   display: grid;
   grid-template-columns: 1fr 380px;
-  gap: 16px; align-items: start;
+  grid-gap: 16px; align-items: start;
 }
 @media (max-width: 1300px) { .mms-grid { grid-template-columns: 1fr; } }
 
@@ -413,7 +415,8 @@ export default {
 /* ── 日历面板 ── */
 .mms-cal-panel { display: flex; flex-direction: column; }
 
-.mms-day-badges { display: flex; gap: 6px; }
+.mms-day-badges { display: flex; }
+.mms-day-badges > * + * { margin-left: 6px; }
 .mms-day-badge {
   font-size: 12px; color: #374151;
   background: #eff6ff; color: #1d4ed8;
@@ -473,7 +476,8 @@ export default {
 }
 
 /* ── 右列 ── */
-.mms-right { display: flex; flex-direction: column; gap: 16px; }
+.mms-right { display: flex; flex-direction: column; }
+.mms-right > * + * { margin-top: 16px; }
 
 /* ── 会议室状态 ── */
 .mms-now-badge {
@@ -484,13 +488,15 @@ export default {
 }
 .mms-room-grid {
   padding: 12px 16px 14px;
-  display: flex; flex-direction: column; gap: 6px;
+  display: flex; flex-direction: column;
 }
+.mms-room-grid > * + * { margin-top: 6px; }
 .mms-room-chip {
-  display: flex; align-items: center; gap: 10px;
+  display: flex; align-items: center;
   padding: 8px 12px; border-radius: 8px; border: 1px solid;
   transition: background .15s;
 }
+.mms-room-chip > * + * { margin-left: 10px; }
 .mms-room-free { background: #f0fdf4; border-color: #bbf7d0; }
 .mms-room-busy { background: #fef2f2; border-color: #fecaca; }
 
@@ -512,15 +518,17 @@ export default {
 
 /* ── 定期建议 ── */
 .mms-periodic-row {
-  display: flex; align-items: center; gap: 10px;
+  display: flex; align-items: center;
   padding: 10px 18px;
   border-bottom: 1px solid #f9fafb;
   transition: background .12s;
 }
+.mms-periodic-row > * + * { margin-left: 10px; }
 .mms-periodic-row:last-child { border-bottom: none; }
 .mms-periodic-row:hover { background: #f9fafb; }
 
-.mms-periodic-left { display: flex; gap: 4px; flex-shrink: 0; }
+.mms-periodic-left { display: flex; flex-shrink: 0; }
+.mms-periodic-left > * + * { margin-left: 4px; }
 .mms-periodic-mid  { flex: 1; min-width: 0; }
 .mms-periodic-right { text-align: right; flex-shrink: 0; }
 

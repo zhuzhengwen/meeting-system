@@ -130,13 +130,21 @@
   &.el-button--primary {
     background: linear-gradient(135deg, #1a56db, #2563eb) !important;
     border-color: #1a56db !important;
-    color: #fff;
+    color: #fff !important;
 
     &:hover, &:focus {
       background: linear-gradient(135deg, #1e40af, #1a56db) !important;
       border-color: #1e40af !important;
+      color: #fff !important;
       box-shadow: 0 4px 12px rgba(26,86,219,.30);
       transform: translateY(-1px);
+    }
+    &:focus:not(:hover) {
+      background: linear-gradient(135deg, #1a56db, #2563eb) !important;
+      border-color: #1a56db !important;
+      color: #fff !important;
+      box-shadow: none;
+      transform: none;
     }
     &:active { transform: translateY(0); box-shadow: none; }
 
@@ -207,6 +215,11 @@
   &.el-button--medium { padding: 9px 18px; font-size: 13px; }
   &.el-button--small  { padding: 7px 14px; font-size: 12px; }
   &.el-button--mini   { padding: 5px 10px; font-size: 12px; }
+}
+
+// MessageBox 确认按钮文字强制白色
+.el-message-box__btns .el-button--primary {
+  color: #fff !important;
 }
 
 // ──────────────────────
