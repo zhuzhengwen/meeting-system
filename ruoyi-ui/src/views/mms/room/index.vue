@@ -26,33 +26,35 @@
         :class="['room-card', 'rc-' + statusDotClass(room)]"
         @click="handleCardClick(room)">
 
-        <!-- 顶部：名称 + 状态胶囊 -->
-        <div class="rc-header">
-          <div class="rc-name">{{ room.roomName || room.roomNumber }}</div>
-          <span :class="['rc-status', statusDotClass(room)]">
-            <i class="rc-dot"></i>{{ statusText(room) }}
-          </span>
-        </div>
+        <!-- 状态指示条 -->
+        <div :class="['rc-bar', statusDotClass(room)]"></div>
 
-        <!-- 园区 · 房间号 -->
-        <div class="rc-sub">{{ room.campus }} · {{ room.roomNumber }}</div>
+        <div class="rc-body">
+          <!-- 名称 + 容量 -->
+          <div class="rc-header">
+            <span class="rc-name">{{ room.roomName || room.roomNumber }}</span>
+            <span class="rc-cap"><i class="el-icon-user"></i>{{ room.capacity }}</span>
+          </div>
 
-        <div class="rc-divider"></div>
+          <!-- 编号 -->
+          <div class="rc-no">{{ room.campus }} {{ room.roomNumber }}</div>
 
-        <!-- 容量 -->
-        <div class="rc-meta">
-          <span class="rc-cap"><i class="el-icon-user"></i> {{ room.capacity }} 人</span>
-          <span v-if="room.isAbnormal === '1'" class="rc-abnormal"><i class="el-icon-warning"></i> 设备异常</span>
-        </div>
+          <!-- 设备 -->
+          <div class="rc-equip">
+            <span v-for="eq in splitEq(room.equipment)" :key="eq"
+              :class="['rc-eq-tag', eqClass(eq), isDamaged(room, eq) ? 'is-damaged' : '']">{{ eq }}</span>
+            <span v-if="!room.equipment" class="rc-no-eq">暂无设备</span>
+          </div>
 
-        <!-- 设备 -->
-        <div class="rc-equip">
-          <span
-            v-for="eq in splitEq(room.equipment)" :key="eq"
-            :class="['rc-eq-tag', eqClass(eq), isDamaged(room, eq) ? 'is-damaged' : '']">
-            {{ eq }}
-          </span>
-          <span v-if="!room.equipment" class="rc-no-eq">暂无设备</span>
+          <!-- 底部状态 -->
+          <div class="rc-footer">
+            <span :class="['rc-state', statusDotClass(room)]">
+              <i class="rc-dot"></i>{{ statusText(room) }}
+            </span>
+            <span v-if="room.isAbnormal === '1'" class="rc-warn">
+              <i class="el-icon-warning-outline"></i>设备异常
+            </span>
+          </div>
         </div>
       </div>
 
@@ -64,62 +66,98 @@
     <pagination v-show="total > 0" :total="total" :page.sync="queryParams.pageNum" :limit.sync="queryParams.pageSize" @pagination="getList" />
 
     <!-- ── 会议室详情弹窗 ── -->
-    <el-dialog :title="detail.campus + detail.roomNumber + ' — 会议室详情'" :visible.sync="detailVisible" width="700px" append-to-body>
-      <el-descriptions :column="2" border size="small" style="margin-bottom:20px">
-        <el-descriptions-item label="园区">{{ detail.campus }}</el-descriptions-item>
-        <el-descriptions-item label="编号">{{ detail.roomNumber }}</el-descriptions-item>
-        <el-descriptions-item label="容量">{{ detail.capacity }} 人</el-descriptions-item>
-        <el-descriptions-item label="设备">
-          <template v-if="detail.equipment">
-            <el-tag v-for="eq in splitEq(detail.equipment)" :key="eq" size="mini"
-              :type="isDamaged(detail, eq) ? 'danger' : ''" style="margin:2px">{{ eq }}</el-tag>
-          </template>
-          <span v-else>—</span>
-        </el-descriptions-item>
-        <el-descriptions-item label="状态">
-          <el-tag size="mini" :type="detail.status === '0' ? 'success' : 'info'">
-            {{ detail.status === '0' ? '正常' : '禁用' }}
-          </el-tag>
-          <el-tag v-if="detail.isAbnormal === '1'" size="mini" type="danger" style="margin-left:6px">设备异常</el-tag>
-        </el-descriptions-item>
-        <el-descriptions-item label="备注">{{ detail.remark || '—' }}</el-descriptions-item>
-      </el-descriptions>
+    <el-dialog :visible.sync="detailVisible" width="680px" append-to-body custom-class="room-detail-dialog" :show-title="false">
+      <div slot="title" style="display:none"></div>
 
-      <!-- 操作按钮 -->
-      <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
-        <el-button size="small" icon="el-icon-edit" @click="handleUpdate(detail)" v-hasPermi="['mms:room:edit']">修改信息</el-button>
-        <el-button size="small" icon="el-icon-delete" type="danger" plain @click="handleDelete(detail)" v-hasPermi="['mms:room:remove']">删除</el-button>
-        <el-button size="small" icon="el-icon-search" type="primary" plain @click="openInspect(null)">日常点检</el-button>
-        <el-button v-if="detail.isAbnormal === '1'" size="small" icon="el-icon-circle-check" type="success" plain @click="clearAbnormal">解除异常</el-button>
+      <!-- 弹窗头部：色条 + 名称信息 -->
+      <div :class="['rd-head', 'rc-' + statusDotClass(detail)]">
+        <div class="rd-head-bar"></div>
+        <div class="rd-head-body">
+          <div class="rd-head-left">
+            <div class="rd-title">{{ detail.roomName || detail.roomNumber }}</div>
+            <div class="rd-sub">{{ detail.campus }} · {{ detail.roomNumber }}</div>
+          </div>
+          <div class="rd-head-right">
+            <span :class="['rd-status', statusDotClass(detail)]">
+              <i class="rd-dot"></i>{{ statusText(detail) }}
+            </span>
+          </div>
+        </div>
       </div>
 
-      <!-- 历史使用记录 -->
-      <div class="detail-section-title">历史使用记录（最近20条）</div>
-      <el-table :data="roomMeetings" size="small" v-loading="meetingLoading" style="width:100%">
-        <el-table-column label="日期时间" width="170">
-          <template slot-scope="s">
-            {{ fmtRange(s.row.startTime, s.row.endTime) }}
-          </template>
-        </el-table-column>
-        <el-table-column label="会议主题" prop="title" show-overflow-tooltip />
-        <el-table-column label="类型" width="70">
-          <template slot-scope="s">
-            <span :class="['mms-cat-badge', 'cat-' + s.row.category]">{{ s.row.category }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column label="主持人" prop="hostName" width="100" />
-        <el-table-column label="状态" width="80">
-          <template slot-scope="s">
-            <el-tag size="mini" :type="meetingStatusType(s.row.status)">{{ meetingStatusLabel(s.row.status) }}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="90" align="center">
-          <template slot-scope="s">
-            <el-button v-if="s.row.status === '2'" size="mini" type="text" icon="el-icon-finished"
-              @click="openInspect(s.row)" v-hasPermi="['mms:room:edit']">交接确认</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+      <!-- 基本信息卡片 -->
+      <div class="rd-info-row">
+        <div class="rd-info-item">
+          <i class="el-icon-user rd-icon"></i>
+          <span class="rd-info-label">容量</span>
+          <span class="rd-info-val">{{ detail.capacity }} 人</span>
+        </div>
+        <div class="rd-info-item">
+          <i class="el-icon-office-building rd-icon"></i>
+          <span class="rd-info-label">园区</span>
+          <span class="rd-info-val">{{ detail.campus }}</span>
+        </div>
+        <div class="rd-info-item">
+          <i class="el-icon-document rd-icon"></i>
+          <span class="rd-info-label">备注</span>
+          <span class="rd-info-val">{{ detail.remark || '—' }}</span>
+        </div>
+      </div>
+
+      <!-- 设备清单 -->
+      <div class="rd-section">
+        <div class="rd-section-title"><i class="el-icon-cpu"></i> 设备清单</div>
+        <div class="rd-equip">
+          <span v-for="eq in splitEq(detail.equipment)" :key="eq"
+            :class="['rc-eq-tag', eqClass(eq), isDamaged(detail, eq) ? 'is-damaged' : '']">
+            {{ eq }}
+          </span>
+          <span v-if="!detail.equipment" class="rc-no-eq">暂无设备信息</span>
+        </div>
+        <div v-if="detail.isAbnormal === '1'" class="rd-abnormal-tip">
+          <i class="el-icon-warning"></i>
+          存在异常设备，当前不可预约
+        </div>
+      </div>
+
+      <!-- 操作按钮 -->
+      <div class="rd-actions">
+        <div class="rd-actions-left">
+          <el-button size="small" icon="el-icon-edit" @click="handleUpdate(detail)" v-hasPermi="['mms:room:edit']">修改信息</el-button>
+          <el-button size="small" icon="el-icon-s-check" @click="openInspect(null)">日常点检</el-button>
+          <el-button v-if="detail.isAbnormal === '1'" size="small" icon="el-icon-circle-check" type="success" plain @click="clearAbnormal">解除异常</el-button>
+        </div>
+        <el-button size="small" icon="el-icon-delete" type="danger" plain @click="handleDelete(detail)" v-hasPermi="['mms:room:remove']">删除</el-button>
+      </div>
+
+      <!-- 使用记录 -->
+      <div class="rd-section">
+        <div class="rd-section-title"><i class="el-icon-time"></i> 使用记录（近20条）</div>
+        <el-table :data="roomMeetings" size="small" v-loading="meetingLoading"
+          style="width:100%" :header-cell-style="{background:'#f8faff',color:'#374151',fontWeight:600}">
+          <el-table-column label="日期时间" width="165">
+            <template slot-scope="s">{{ fmtRange(s.row.startTime, s.row.endTime) }}</template>
+          </el-table-column>
+          <el-table-column label="会议主题" prop="title" show-overflow-tooltip />
+          <el-table-column label="类型" width="68">
+            <template slot-scope="s">
+              <span :class="['mms-cat-badge', 'cat-' + s.row.category]">{{ s.row.category }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="主持人" prop="hostName" width="90" />
+          <el-table-column label="状态" width="76">
+            <template slot-scope="s">
+              <el-tag size="mini" :type="meetingStatusType(s.row.status)">{{ meetingStatusLabel(s.row.status) }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="90" align="center">
+            <template slot-scope="s">
+              <el-button v-if="s.row.status === '2'" size="mini" type="text" icon="el-icon-finished"
+                @click="openInspect(s.row)" v-hasPermi="['mms:room:edit']">交接确认</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
     </el-dialog>
 
     <!-- ── 新增/修改对话框 ── -->
@@ -446,93 +484,169 @@ export default {
 /* ── 卡片网格 ── */
 .room-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
   margin-bottom: 20px;
 }
 
+/* 卡片本体 */
 .room-card {
   background: #fff;
-  border: 1px solid #e8eef8;
-  border-top: 3px solid #e8eef8;
+  border: 1px solid #e4eaf5;
   border-radius: 10px;
-  padding: 14px 16px 12px;
+  overflow: hidden;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  height: 168px;
   transition: box-shadow .2s, transform .15s;
-  &:hover { box-shadow: 0 6px 20px rgba(26,86,219,.1); transform: translateY(-2px); }
-  &.rc-dot-free     { border-top-color: #22c55e; }
-  &.rc-dot-occupied { border-top-color: #ef4444; }
-  &.rc-dot-disabled { border-top-color: #9ca3af; }
-  &.rc-dot-abnormal { border-top-color: #f59e0b; background: #fffbf0; }
+  &:hover {
+    box-shadow: 0 4px 18px rgba(26,86,219,.12);
+    transform: translateY(-2px);
+  }
 }
 
-/* 名称行 */
+/* 顶部状态色条 */
+.rc-bar {
+  height: 4px; flex-shrink: 0;
+  &.dot-free     { background: linear-gradient(90deg, #1a56db, #60a5fa); }
+  &.dot-occupied { background: linear-gradient(90deg, #ef4444, #f87171); }
+  &.dot-disabled { background: #d1d5db; }
+  &.dot-abnormal { background: linear-gradient(90deg, #f59e0b, #fcd34d); }
+}
+
+.rc-body {
+  padding: 12px 14px 0;
+  display: flex; flex-direction: column; flex: 1; min-height: 0;
+}
+
+/* 名称 + 容量 */
 .rc-header {
-  display: flex; justify-content: space-between; align-items: flex-start; gap: 6px;
-  margin-bottom: 3px;
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 2px; flex-shrink: 0;
 }
 .rc-name {
   font-size: 14px; font-weight: 700; color: #111827;
-  line-height: 1.4; flex: 1; min-width: 0;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-
-/* 状态胶囊 */
-.rc-status {
-  display: inline-flex; align-items: center; gap: 4px;
-  font-size: 11px; font-weight: 500; padding: 2px 8px;
-  border-radius: 20px; white-space: nowrap; flex-shrink: 0;
-  .rc-dot { width: 6px; height: 6px; border-radius: 50%; }
-  &.dot-free     { background: #f0fdf4; color: #16a34a; .rc-dot { background: #22c55e; } }
-  &.dot-occupied { background: #fef2f2; color: #dc2626; .rc-dot { background: #ef4444; } }
-  &.dot-disabled { background: #f3f4f6; color: #6b7280; .rc-dot { background: #9ca3af; } }
-  &.dot-abnormal { background: #fffbeb; color: #d97706; .rc-dot { background: #f59e0b; } }
-}
-
-/* 副标题 */
-.rc-sub {
-  font-size: 12px; color: #9ca3af; margin-bottom: 10px;
-}
-
-.rc-divider {
-  height: 1px; background: #f3f4f6; margin-bottom: 10px;
-}
-
-/* 容量 + 异常 */
-.rc-meta {
-  display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+  flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .rc-cap {
-  font-size: 12px; color: #6b7280;
-  display: inline-flex; align-items: center; gap: 4px;
-  i { color: #1a56db; font-size: 13px; }
-}
-.rc-abnormal {
-  font-size: 11px; color: #b45309; background: #fef3c7;
-  padding: 1px 7px; border-radius: 4px;
-  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 11px; color: #6b7280; flex-shrink: 0; margin-left: 6px;
+  display: flex; align-items: center; gap: 2px;
+  i { font-size: 11px; }
 }
 
-/* 设备标签 */
-.rc-equip { display: flex; flex-wrap: wrap; gap: 4px; min-height: 20px; }
-.rc-eq-tag {
-  font-size: 11px; padding: 1px 7px; border-radius: 10px;
-  font-weight: 500; border: 1px solid transparent;
-  &.is-damaged { opacity: .5; text-decoration: line-through; }
+/* 编号 */
+.rc-no {
+  font-size: 11px; color: #9ca3af; margin-bottom: 8px; flex-shrink: 0;
 }
-.eq-display { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
-.eq-video   { background: #fdf4ff; color: #7e22ce; border-color: #e9d5ff; }
-.eq-audio   { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
-.eq-board   { background: #f0fdf4; color: #15803d; border-color: #a7f3d0; }
-.eq-net     { background: #f0f9ff; color: #0369a1; border-color: #bae6fd; }
-.eq-default { background: #f9fafb; color: #4b5563; border-color: #e5e7eb; }
-.rc-no-eq   { font-size: 12px; color: #d1d5db; }
+
+/* 设备标签区域 —— flex:1 撑开，让底部 footer 始终贴底 */
+.rc-equip {
+  flex: 1; display: flex; flex-wrap: wrap; align-content: flex-start;
+  gap: 3px; overflow: hidden;
+}
+.rc-eq-tag {
+  font-size: 11px; padding: 1px 7px; border-radius: 20px;
+  font-weight: 500; line-height: 1.6; white-space: nowrap;
+  border: 1px solid transparent;
+  &.eq-display { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+  &.eq-video   { background: #fdf4ff; color: #7e22ce; border-color: #e9d5ff; }
+  &.eq-audio   { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+  &.eq-board   { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+  &.eq-net     { background: #f0f9ff; color: #0369a1; border-color: #bae6fd; }
+  &.eq-default { background: #f5f3ff; color: #5b21b6; border-color: #ddd6fe; }
+  &.is-damaged { opacity: .4; text-decoration: line-through; }
+}
+.rc-no-eq { font-size: 11px; color: #d1d5db; align-self: flex-start; }
+
+/* 底部状态行 —— 固定贴底 */
+.rc-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 0 10px; flex-shrink: 0;
+  border-top: 1px solid #f3f4f6; margin-top: 8px;
+}
+.rc-state {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 500;
+  .rc-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  &.dot-free     { color: #1a56db; .rc-dot { background: #1a56db; } }
+  &.dot-occupied { color: #dc2626; .rc-dot { background: #ef4444; } }
+  &.dot-disabled { color: #9ca3af; .rc-dot { background: #d1d5db; } }
+  &.dot-abnormal { color: #d97706; .rc-dot { background: #f59e0b; } }
+}
+.rc-warn {
+  font-size: 11px; color: #d97706;
+  display: flex; align-items: center; gap: 3px;
+}
 
 /* ── 详情弹窗 ── */
-.detail-section-title {
-  font-size: 13px; font-weight: 600; color: #374151;
-  margin-bottom: 10px; border-left: 3px solid #1a56db; padding-left: 8px;
+.rd-head {
+  margin: -20px -20px 0;
+  overflow: hidden;
+  border-radius: 0;
 }
+.rd-head-bar {
+  height: 4px;
+  .rc-dot-free     & { background: linear-gradient(90deg, #1a56db, #60a5fa); }
+  .rc-dot-occupied & { background: linear-gradient(90deg, #ef4444, #f87171); }
+  .rc-dot-disabled & { background: #d1d5db; }
+  .rc-dot-abnormal & { background: linear-gradient(90deg, #f59e0b, #fcd34d); }
+}
+.rd-head-body {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 16px 20px 14px; background: #f8faff;
+  border-bottom: 1px solid #e8eef8;
+}
+.rd-title { font-size: 17px; font-weight: 700; color: #111827; margin-bottom: 3px; }
+.rd-sub   { font-size: 12px; color: #9ca3af; }
+.rd-status {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; font-weight: 600; padding: 4px 12px;
+  border-radius: 20px;
+  .rd-dot { width: 7px; height: 7px; border-radius: 50%; }
+  &.dot-free     { background: #eff6ff; color: #1a56db; .rd-dot { background: #1a56db; } }
+  &.dot-occupied { background: #fef2f2; color: #dc2626; .rd-dot { background: #ef4444; } }
+  &.dot-disabled { background: #f3f4f6; color: #6b7280; .rd-dot { background: #d1d5db; } }
+  &.dot-abnormal { background: #fffbeb; color: #d97706; .rd-dot { background: #f59e0b; } }
+}
+
+/* 基本信息横排 */
+.rd-info-row {
+  display: flex; gap: 0; margin: 16px 0 0;
+  border: 1px solid #e8eef8; border-radius: 8px; overflow: hidden;
+}
+.rd-info-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  padding: 12px 8px; gap: 4px;
+  border-right: 1px solid #e8eef8;
+  &:last-child { border-right: none; }
+}
+.rd-icon { font-size: 16px; color: #1a56db; }
+.rd-info-label { font-size: 11px; color: #9ca3af; }
+.rd-info-val   { font-size: 13px; font-weight: 600; color: #1f2937; }
+
+/* 分区 */
+.rd-section { margin-top: 18px; }
+.rd-section-title {
+  font-size: 13px; font-weight: 600; color: #374151;
+  margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+  i { color: #1a56db; }
+}
+.rd-equip { display: flex; flex-wrap: wrap; gap: 5px; }
+.rd-abnormal-tip {
+  margin-top: 8px; font-size: 12px; color: #d97706;
+  background: #fffbeb; border: 1px solid #fde68a;
+  border-radius: 6px; padding: 6px 10px;
+  display: flex; align-items: center; gap: 5px;
+}
+
+/* 操作栏 */
+.rd-actions {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 16px; padding: 12px 0;
+  border-top: 1px solid #f3f4f6; border-bottom: 1px solid #f3f4f6;
+}
+.rd-actions-left { display: flex; gap: 8px; }
 
 /* 会议类型徽章 */
 .mms-cat-badge {
@@ -547,4 +661,10 @@ export default {
   grid-column: 1 / -1;
   text-align: center; color: #9ca3af; padding: 60px 0; font-size: 14px;
 }
+</style>
+
+<style>
+/* 详情弹窗：去掉默认 header，body 顶部无内边距 */
+.room-detail-dialog .el-dialog__header { display: none; }
+.room-detail-dialog .el-dialog__body  { padding: 20px; }
 </style>

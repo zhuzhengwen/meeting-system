@@ -31,9 +31,7 @@ public class MmsRoomServiceImpl extends ServiceImpl<MmsRoomMapper, MmsRoom> impl
 
     @Override
     public List<MmsRoom> selectRoomList(MmsRoom room) {
-        LambdaQueryWrapper<MmsRoom> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.ge(MmsRoom::getRoomNumber, "104");
-        return roomMapper.selectList(queryWrapper);
+        return roomMapper.selectByCondition(room);
     }
 
     @Override
