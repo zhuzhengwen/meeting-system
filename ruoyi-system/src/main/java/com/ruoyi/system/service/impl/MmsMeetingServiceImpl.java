@@ -107,6 +107,7 @@ public class MmsMeetingServiceImpl implements IMmsMeetingService
         MmsMeeting meeting = new MmsMeeting();
         meeting.setMeetingId(meetingId);
         meeting.setStatus("2");
+        meeting.setEndTime(new Date());
         meeting.setUpdateBy(updateBy);
         return meetingMapper.updateById(meeting);
     }
