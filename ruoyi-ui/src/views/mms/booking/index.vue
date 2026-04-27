@@ -373,7 +373,7 @@
                 active-text="通知参会人"
                 inactive-text="不通知"
               />
-              <div class="bk-notify-info" v-show="meetingForm.notifyByEmail">
+              <div class="bk-notify-info" :style="{ visibility: meetingForm.notifyByEmail ? 'visible' : 'hidden' }">
                 <span v-if="attendeesWithEmail > 0" class="bk-notify-hint">
                   <i class="el-icon-message"></i>
                   将向 {{ attendeesWithEmail }} 位 LDAP 参会人发送邀请邮件

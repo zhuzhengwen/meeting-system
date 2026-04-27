@@ -94,7 +94,7 @@
             <span class="mms-now-badge">实时</span>
           </div>
           <div v-if="!allRoomsData.length" class="mms-empty">暂无会议室数据</div>
-          <div class="mms-room-grid">
+          <div class="mms-room-grid mms-room-grid-scroll">
             <div
               v-for="room in allRoomsData"
               :key="room.roomId"
@@ -119,6 +119,7 @@
             </router-link>
           </div>
           <div v-if="!periodicMeetings.length" class="mms-empty">暂无定期会议记录</div>
+          <div class="mms-periodic-scroll">
           <div
             v-for="m in periodicMeetings"
             :key="m.meetingId"
@@ -136,6 +137,7 @@
               <div class="mms-periodic-ago">{{ daysAgoStr(m.startTime) }}</div>
               <div class="mms-periodic-date">{{ shortDate(m.startTime) }}</div>
             </div>
+          </div>
           </div>
         </div>
 
@@ -476,7 +478,7 @@ export default {
 }
 
 /* ── 右列 ── */
-.mms-right { display: flex; flex-direction: column; }
+.mms-right { display: flex; flex-direction: column; position: sticky; top: 20px; max-height: calc(100vh - 80px); overflow-y: auto; }
 .mms-right > * + * { margin-top: 16px; }
 
 /* ── 会议室状态 ── */
@@ -491,6 +493,7 @@ export default {
   display: flex; flex-direction: column;
 }
 .mms-room-grid > * + * { margin-top: 6px; }
+.mms-room-grid-scroll { max-height: 280px; overflow-y: auto; }
 .mms-room-chip {
   display: flex; align-items: center;
   padding: 8px 12px; border-radius: 8px; border: 1px solid;
@@ -517,6 +520,7 @@ export default {
 .mms-room-busy .mms-room-status-tag { color: #ef4444; }
 
 /* ── 定期建议 ── */
+.mms-periodic-scroll { max-height: 280px; overflow-y: auto; }
 .mms-periodic-row {
   display: flex; align-items: center;
   padding: 10px 18px;
