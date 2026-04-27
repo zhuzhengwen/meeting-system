@@ -81,8 +81,7 @@
         <div class="mm-td th-actions">
           <button class="mm-btn mm-btn-default" @click="showDetail(m)">详情</button>
           <button v-if="m.status==='0'" class="mm-btn mm-btn-danger" @click="handleCancel(m)">取消</button>
-          <button v-if="m.status==='0' && isInProgress(m)" class="mm-btn mm-btn-end" @click="handleComplete(m)">提前结束</button>
-          <button v-else-if="m.status==='0'" class="mm-btn mm-btn-warning" @click="handleComplete(m)">完成</button>
+          <button v-if="m.status==='0'" class="mm-btn mm-btn-warning" @click="handleComplete(m)">完成</button>
         </div>
       </div>
 
@@ -154,9 +153,7 @@
         <div>
           <el-button v-if="detailData.status==='0'" size="small" type="warning"
             icon="el-icon-close" @click="handleCancel(detailData)">取消会议</el-button>
-          <el-button v-if="detailData.status==='0' && isInProgress(detailData)" size="small" type="danger"
-            icon="el-icon-switch-button" @click="handleComplete(detailData)">提前结束</el-button>
-          <el-button v-else-if="detailData.status==='0'" size="small" type="success"
+          <el-button v-if="detailData.status==='0'" size="small" type="success"
             icon="el-icon-check" @click="handleComplete(detailData)">标记完成</el-button>
         </div>
       </div>
@@ -218,22 +215,13 @@ export default {
       })
     },
     handleComplete(row) {
-      const inProgress = this.isInProgress(row)
-      const msg = inProgress
-        ? `会议"${row.title}"正在进行中，确定提前结束并释放会议室吗？`
-        : `确定将"${row.title}"标记为已完成吗？`
-      this.$confirm(msg, '提示', { type: 'warning' }).then(() => {
+      this.$confirm(`确定将"${row.title}"标记为已完成吗？`, '提示', { type: 'warning' }).then(() => {
         return completeMeeting(row.meetingId)
       }).then(() => {
-        this.msgSuccess(inProgress ? '已提前结束，会议室已释放' : '已完成')
+        this.msgSuccess('已完成')
         this.detailVisible = false
         this.getList()
       })
-    },
-    isInProgress(row) {
-      if (!row || !row.startTime || !row.endTime) return false
-      const now = Date.now()
-      return new Date(row.startTime).getTime() <= now && new Date(row.endTime).getTime() > now
     },
     meetingNo(m) {
       return m.meetingNo || ('MTG-' + String(m.meetingId).padStart(4, '0'))
@@ -345,7 +333,6 @@ export default {
 .mm-btn-default { background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; }
 .mm-btn-danger  { background: #ef4444; color: #fff; }
 .mm-btn-warning { background: #f59e0b; color: #fff; }
-.mm-btn-end     { background: #dc2626; color: #fff; }
 
 .mm-empty { text-align: center; color: #9ca3af; padding: 48px 0; font-size: 13px; }
 
