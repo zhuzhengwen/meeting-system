@@ -239,18 +239,25 @@
         <!-- 预约摘要 -->
         <div class="bk-summary">
           <div class="bk-summary-item">
-            <span class="bk-summary-label">{{ meetingType==='0' ? '会议室' : '会议形式' }}</span>
+            <span class="bk-summary-label">
+              <i class="el-icon-office-building"></i>
+              {{ meetingType==='0' ? '会议室' : '会议形式' }}
+            </span>
             <span class="bk-summary-val">
               {{ meetingType==='0' ? booking.campus + ' ' + getSelRoomNumber() : '线上会议' }}
             </span>
           </div>
-          <div class="bk-summary-item">
-            <span class="bk-summary-label">日期</span>
-            <span class="bk-summary-val">{{ booking.date }}</span>
+          <div class="bk-summary-item bk-summary-highlight">
+            <span class="bk-summary-label">
+              <i class="el-icon-date"></i> 日期
+            </span>
+            <span class="bk-summary-val bk-summary-date">{{ booking.date }}</span>
           </div>
-          <div class="bk-summary-item">
-            <span class="bk-summary-label">时间段</span>
-            <span class="bk-summary-val">{{ summaryTimeStr }}</span>
+          <div class="bk-summary-item bk-summary-highlight">
+            <span class="bk-summary-label">
+              <i class="el-icon-time"></i> 时间段
+            </span>
+            <span class="bk-summary-val bk-summary-time">{{ summaryTimeStr }}</span>
           </div>
         </div>
 
@@ -274,7 +281,7 @@
               </el-form-item>
             </el-col>
           </el-row>
-          <el-form-item label="主持人">
+          <el-form-item label="主持人" prop="hostName">
             <el-autocomplete
               v-model="meetingForm.hostName"
               :fetch-suggestions="searchHostUsers"
@@ -293,23 +300,24 @@
               </template>
             </el-autocomplete>
           </el-form-item>
-          <el-form-item label="主导部门">
-            <el-input v-model="meetingForm.leadDept" placeholder="主导部门（可选）" />
+          <el-form-item label="主导部门" prop="leadDept">
+            <el-input v-model="meetingForm.leadDept" placeholder="请输入主导部门" />
           </el-form-item>
-          <el-form-item label="参会人员">
+          <el-form-item label="参会人员" prop="attendees">
             <el-select
               v-model="meetingForm.attendees"
               multiple
               filterable
               remote
-              reserve-keyword
               value-key="userId"
               placeholder="搜索LDAP账号，或直接输入姓名回车手动添加"
               :remote-method="searchUsers"
               :loading="userSearchLoading"
               style="width:100%"
+              class="bk-attendees-select"
               popper-class="bk-user-dropdown"
               @visible-change="onAttendeeDropdownToggle"
+              @change="onAttendeesChange"
             >
               <!-- LDAP 搜索结果 -->
               <el-option
@@ -365,7 +373,7 @@
                 active-text="通知参会人"
                 inactive-text="不通知"
               />
-              <template v-if="meetingForm.notifyByEmail">
+              <div class="bk-notify-info" v-show="meetingForm.notifyByEmail">
                 <span v-if="attendeesWithEmail > 0" class="bk-notify-hint">
                   <i class="el-icon-message"></i>
                   将向 {{ attendeesWithEmail }} 位 LDAP 参会人发送邀请邮件
@@ -374,7 +382,7 @@
                   <i class="el-icon-warning"></i>
                   当前无可通知参会人（手动添加的成员没有邮箱）
                 </span>
-              </template>
+              </div>
             </div>
           </el-form-item>
           <el-form-item label="会议说明">
@@ -444,8 +452,15 @@ export default {
       userSearchTimer: null,
       userSearchKeyword: '',
       infoRules: {
-        title: [{ required: true, message: '会议标题不能为空', trigger: 'blur' }],
-        category: [{ required: true, message: '请选择会议类型', trigger: 'change' }]
+        title:    [{ required: true, message: '请输入会议标题', trigger: 'blur' }],
+        category: [{ required: true, message: '请选择会议类型', trigger: 'change' }],
+        hostName: [{ required: true, message: '请填写主持人', trigger: 'blur' }],
+        leadDept: [{ required: true, message: '请填写主导部门', trigger: 'blur' }],
+        attendees: [{
+          required: true,
+          validator: (rule, val, cb) => val && val.length > 0 ? cb() : cb(new Error('请至少添加一位参会人员')),
+          trigger: 'change'
+        }]
       },
       submitting: false,
       dateOptions: { disabledDate: d => d.getTime() < Date.now() - 86400000 },
@@ -747,7 +762,24 @@ export default {
       }, 300)
     },
     onAttendeeDropdownToggle(visible) {
-      if (!visible) this.userSearchKeyword = ''
+      if (!visible) {
+        this.userSearchKeyword = ''
+        this.userOptions = []
+      }
+    },
+    onAttendeesChange(val) {
+      // 去重：相同 userId 只保留最后一次
+      const seen = new Set()
+      this.meetingForm.attendees = val.filter(u => {
+        if (seen.has(u.userId)) return false
+        seen.add(u.userId)
+        return true
+      })
+      // 选中后清空搜索状态，避免同一手动词重复出现
+      this.$nextTick(() => {
+        this.userSearchKeyword = ''
+        this.userOptions = []
+      })
     },
     removeAttendee(user) {
       this.meetingForm.attendees = this.meetingForm.attendees.filter(u => u.userId !== user.userId)
@@ -855,12 +887,21 @@ export default {
   vertical-align: middle;
 }
 
+/* ── 参会人选择器：隐藏内部 tag，只保留搜索输入框 ── */
+.bk-attendees-select .el-select__tags .el-tag { display: none !important; }
+.bk-attendees-select .el-select__tags { flex-wrap: nowrap; }
+
 /* ── 邮件通知行 ── */
 .bk-notify-row {
   display: flex;
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
+  min-height: 32px;
+}
+.bk-notify-info {
+  display: flex;
+  align-items: center;
 }
 .bk-notify-hint {
   font-size: 12px;
@@ -1175,12 +1216,51 @@ export default {
 
 /* ── 预约摘要 ── */
 .bk-summary {
-  display:grid; grid-template-columns:repeat(3,1fr); grid-gap:12px;
-  background:#f9fafb; border-radius:8px; padding:14px; margin-bottom:20px;
-  border:1px solid #e5e7eb;
+  display: grid;
+  grid-template-columns: 1fr 1.1fr 1.1fr;
+  gap: 10px;
+  background: #f0f5ff;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 22px;
+  border: 1px solid #c7d9f8;
 }
-.bk-summary-label { font-size:11px; color:#9ca3af; display:block; }
-.bk-summary-val   { font-size:14px; font-weight:600; color:#1f2937; }
+.bk-summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.bk-summary-label {
+  font-size: 11px;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  i { font-size: 11px; }
+}
+.bk-summary-val {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+}
+.bk-summary-highlight {
+  background: #fff;
+  border-radius: 8px;
+  padding: 8px 12px;
+  border: 1px solid #dbeafe;
+}
+.bk-summary-highlight .bk-summary-label { color: #2563eb; }
+.bk-summary-date {
+  font-size: 16px;
+  color: #1a4ad4;
+  letter-spacing: 0.5px;
+}
+.bk-summary-time {
+  font-size: 16px;
+  color: #1a4ad4;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.5px;
+}
 .bk-legend-row { display: flex; align-items: center; }
 .bk-legend-row > * + * { margin-left: 8px; }
 </style>

@@ -8,7 +8,7 @@
                 :background-color="settings.sideTheme === 'theme-dark' ? variables.menuBg : variables.menuLightBg"
                 :text-color="settings.sideTheme === 'theme-dark' ? variables.menuText : 'rgba(0,0,0,.65)'"
                 :unique-opened="true"
-                :active-text-color="settings.theme"
+                :active-text-color="settings.sideTheme === 'theme-dark' ? variables.menuActiveText : settings.theme"
                 :collapse-transition="false"
                 mode="vertical"
             >

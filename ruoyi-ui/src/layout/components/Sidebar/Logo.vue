@@ -57,9 +57,9 @@ export default {
   width: 100%;
   height: 50px;
   line-height: 50px;
-  background: #0d1f4e;
   text-align: center;
   overflow: hidden;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
 
   & .sidebar-logo-link {
     height: 100%;

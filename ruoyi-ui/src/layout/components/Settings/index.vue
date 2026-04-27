@@ -231,7 +231,7 @@ export default {
       }
 
       &.dark {
-        .tp-sidebar { background: #0d1f4e; }
+        .tp-sidebar { background: #1a4ad4; }
         .tp-content { background: #f1f5f9; }
       }
 

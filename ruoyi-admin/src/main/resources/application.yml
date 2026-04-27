@@ -94,6 +94,20 @@ spring:
         max-active: 8
         # #连接池最大阻塞等待时间（使用负值表示没有限制）
         max-wait: -1ms
+  # 邮件配置（启用邮件时需填写真实配置）
+  mail:
+    host: smtp.example.com
+    port: 587
+    username: meeting@example.com
+    password: your-smtp-password
+    default-encoding: UTF-8
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
 
 # token配置
 token:
@@ -133,21 +147,7 @@ mms:
     # 发件人显示名称
     from-name: 会议管理系统
 
-# Spring Mail（启用邮件时需填写真实配置）
-spring:
-  mail:
-    host: smtp.example.com
-    port: 587
-    username: meeting@example.com
-    password: your-smtp-password
-    default-encoding: UTF-8
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-            required: true
+# Spring Mail（启用邮件时需填写真实配置，合并到上方 spring: 节点下）
 
 # LDAP配置
 ldap:
