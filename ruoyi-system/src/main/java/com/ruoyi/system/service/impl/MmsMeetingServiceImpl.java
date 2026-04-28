@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.ruoyi.common.exception.CustomException;
 import com.ruoyi.system.config.BpmProperties;
 import com.ruoyi.system.domain.MmsMeeting;
 import com.ruoyi.system.domain.MmsMeetingAttendee;
@@ -63,6 +64,7 @@ public class MmsMeetingServiceImpl implements IMmsMeetingService
         if (meeting.getStatus() == null || meeting.getStatus().isEmpty()) {
             meeting.setStatus(bpmProperties.isEnabled() ? "3" : "0");
         }
+        checkRoomConflict(meeting, 0L);
         int rows = meetingMapper.insert(meeting);
         insertAttendees(meeting);
         sendEmailAsync(meeting);
@@ -72,11 +74,39 @@ public class MmsMeetingServiceImpl implements IMmsMeetingService
     @Override
     @Transactional
     public int updateMeeting(MmsMeeting meeting) {
+        checkRoomConflict(meeting, meeting.getMeetingId());
         meetingMapper.deleteAttendeesByMeetingId(meeting.getMeetingId());
         insertAttendees(meeting);
         int rows = meetingMapper.updateById(meeting);
         sendEmailAsync(meeting);
         return rows;
+    }
+
+    /**
+     * 线下会议预约冲突检查。
+     * 先通过 PostgreSQL advisory lock 将同一会议室的并发请求串行化，
+     * 再执行时段重叠查询，有冲突则抛出业务异常。
+     *
+     * @param meeting          待插入/更新的会议
+     * @param excludeMeetingId 更新场景排除自身 ID，新增传 0
+     */
+    private void checkRoomConflict(MmsMeeting meeting, Long excludeMeetingId) {
+        if (!"0".equals(meeting.getMeetingType())) return; // 线上会议无需检查
+        if (meeting.getRoomId() == null) return;
+        if (meeting.getStartTime() == null || meeting.getEndTime() == null) return;
+
+        // 事务级 advisory lock：同 roomId 的并发事务在此排队，防止 TOCTOU 竞态
+        meetingMapper.lockRoomAdvisory(meeting.getRoomId());
+
+        int conflicts = meetingMapper.countConflicts(
+                meeting.getRoomId(),
+                meeting.getStartTime(),
+                meeting.getEndTime(),
+                excludeMeetingId == null ? 0L : excludeMeetingId);
+
+        if (conflicts > 0) {
+            throw new CustomException("该时段会议室已被预约，请重新选择时段");
+        }
     }
 
     @Override
