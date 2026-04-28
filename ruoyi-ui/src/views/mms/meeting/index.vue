@@ -82,6 +82,7 @@
           <button class="mm-btn mm-btn-default" @click="showDetail(m)">详情</button>
           <button v-if="m.status==='0'" v-hasPermi="['mms:meeting:edit']" class="mm-btn mm-btn-danger" @click="handleCancel(m)">取消</button>
           <button v-if="m.status==='0'" v-hasPermi="['mms:meeting:edit']" class="mm-btn mm-btn-warning" @click="handleComplete(m)">完成</button>
+          <button class="mm-btn mm-btn-primary" @click="openCopy(m)">复制预约</button>
         </div>
       </div>
 
@@ -155,14 +156,111 @@
             icon="el-icon-close" @click="handleCancel(detailData)">取消会议</el-button>
           <el-button v-if="detailData.status==='0'" v-hasPermi="['mms:meeting:edit']" size="small" type="success"
             icon="el-icon-check" @click="handleComplete(detailData)">标记完成</el-button>
+          <el-button size="small" type="primary" @click="openCopy(detailData); detailVisible=false">复制预约</el-button>
         </div>
       </div>
+    </el-dialog>
+
+    <!-- 复制预约弹窗 -->
+    <el-dialog title="复制会议预约" :visible.sync="copyVisible" width="860px"
+      append-to-body :close-on-click-modal="false">
+      <div class="bk-steps">
+        <div :class="['bk-step', copyStep===1?'is-active':'is-done']">
+          <div class="bk-step-circle">{{ copyStep>1?'✓':'1' }}</div>
+          <div class="bk-step-label">选择日期与园区</div>
+        </div>
+        <div :class="['bk-step', copyStep===2?'is-active':copyStep>2?'is-done':'']">
+          <div class="bk-step-circle">2</div>
+          <div class="bk-step-label">选择会议室与时段，确认预约</div>
+        </div>
+      </div>
+
+      <template v-if="copyStep===1">
+        <div class="cp-source-bar">
+          <span class="cp-src-item">原会议：<b>{{ copySource.title }}</b></span>
+          <span class="cp-src-item">原时间：{{ fmtDate(copySource.startTime) }} {{ fmtTime(copySource.startTime) }}–{{ fmtTime(copySource.endTime) }}</span>
+          <span class="cp-src-item">原场地：{{ copySource.campus }}·{{ copySource.roomNumber }}</span>
+          <span class="cp-src-item">时长：<b>{{ copyDuration }}</b> 分钟</span>
+        </div>
+        <el-form label-width="70px" style="margin-top:22px;max-width:440px">
+          <el-form-item label="新日期">
+            <el-date-picker v-model="copyForm.date" type="date" value-format="yyyy-MM-dd" placeholder="选择日期" style="width:100%" />
+          </el-form-item>
+          <el-form-item label="园区">
+            <el-select v-model="copyForm.campus" placeholder="选择园区" style="width:100%">
+              <el-option label="1园" value="1园" /><el-option label="2园" value="2园" /><el-option label="3园" value="3园" />
+            </el-select>
+          </el-form-item>
+        </el-form>
+        <el-button type="primary" :disabled="!copyForm.date||!copyForm.campus" @click="goStep2">查看空闲排程 →</el-button>
+      </template>
+
+      <template v-if="copyStep===2">
+        <div class="cp-tl-topbar">
+          <span class="cp-tl-info">{{ copyForm.campus }} — {{ copyForm.date }}&nbsp;&nbsp;在时间轴上拖拽选择会议时段</span>
+          <div class="cp-flex-12">
+            <span class="cp-leg"><span class="cp-swatch cp-swatch-occ"></span>已占用</span>
+            <span class="cp-leg"><span class="cp-swatch cp-swatch-sel"></span>选中</span>
+            <el-button size="mini" @click="copyStep=1;resetSel()">◀ 重新选择</el-button>
+          </div>
+        </div>
+        <div class="cp-timeline" v-loading="schedLoading">
+          <div class="cp-head">
+            <div class="cp-room-col">会议室</div>
+            <div class="cp-hours"><div v-for="h in cpHours" :key="h" class="cp-hour">{{ String(h).padStart(2,'0') }}:00</div></div>
+          </div>
+          <div v-for="room in campusRooms" :key="room.roomId" class="cp-row">
+            <div class="cp-room-col">
+              <div class="cp-rnum">{{ room.roomNumber }}</div>
+              <div class="cp-rinfo">{{ room.capacity }}人<template v-if="room.equipment"> · {{ room.equipment }}</template></div>
+            </div>
+            <div class="cp-track" @mousedown.prevent="startDrag($event,room)" @mousemove.prevent="onDragMove($event)" @mouseup.prevent="endDrag">
+              <div v-for="h in cpHours" :key="h" class="cp-vline" :style="{left:hourPct(h)+'%'}"></div>
+              <div v-for="occ in getRoomOccupied(room)" :key="occ.meetingId" class="cp-occ" :style="cpBlockPct(occ)" :title="occ.title"></div>
+              <div v-if="selRoom&&selRoom.roomId===room.roomId&&selEndMin>selStartMin" class="cp-sel" :style="cpRangePct(selStartMin,selEndMin)">
+                <span class="cp-sel-txt">{{ minsToTime(selStartMin) }}–{{ minsToTime(selEndMin) }}</span>
+              </div>
+              <div v-else-if="dragRoom&&dragRoom.roomId===room.roomId&&dragEndMin>dragStartMin" class="cp-sel cp-drag-preview" :style="cpRangePct(dragStartMin,dragEndMin)"></div>
+            </div>
+          </div>
+          <div v-if="!campusRooms.length&&!schedLoading" class="mm-empty">该园区暂无可用会议室</div>
+        </div>
+        <el-form label-position="top" size="small" class="cp-meta-form">
+          <el-row :gutter="16">
+            <el-col :span="12">
+              <el-form-item label="会议标题" required>
+                <el-input v-model="copyForm.title" placeholder="请输入会议标题（必填）" clearable />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="备注">
+                <el-input v-model="copyForm.description" placeholder="备注（可选）" clearable />
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </el-form>
+        <div class="cp-sel-bar">
+          <div v-if="selRoom&&selEndMin>selStartMin" class="cp-sel-bar-text">
+            已选：<b>{{ copyForm.campus }} · {{ selRoom.roomNumber }}</b>
+            &nbsp;{{ copyForm.date }} {{ minsToTime(selStartMin) }} → {{ minsToTime(selEndMin) }}
+            &nbsp;（{{ selEndMin-selStartMin }} 分钟）
+          </div>
+          <div v-else class="cp-sel-placeholder">← 在时间轴上拖拽选择会议室和时段</div>
+          <el-button type="primary" size="small" :loading="submitting"
+            :disabled="!selRoom||selEndMin<=selStartMin||!copyForm.title" @click="confirmCopy">确认预约</el-button>
+        </div>
+      </template>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import { listMeeting, getMeeting, cancelMeeting, completeMeeting } from '@/api/mms/meeting'
+import { listMeeting, getMeeting, cancelMeeting, completeMeeting, addMeeting, getMeetingSchedule } from '@/api/mms/meeting'
+import { allRooms } from '@/api/mms/room'
+
+const CP_START = 7
+const CP_END = 18
+const CP_TOTAL = (CP_END - CP_START) * 60
 
 export default {
   name: 'MmsMeeting',
@@ -177,10 +275,33 @@ export default {
       dateRange: [],
       queryParams: { pageNum: 1, pageSize: 10, title: undefined, campus: undefined, category: undefined, status: undefined, beginDate: undefined, endDate: undefined },
       detailVisible: false,
-      detailData: {}
+      detailData: {},
+      // 复制预约
+      copyVisible: false,
+      copyStep: 1,
+      copySource: {},
+      copyForm: { date: '', campus: '', title: '', description: '' },
+      campusRooms: [],
+      dayMeetings: [],
+      schedLoading: false,
+      dragRoom: null, dragStartMin: 0, dragEndMin: 0, trackRect: null,
+      _mmMove: null, _mmUp: null,
+      selRoom: null, selStartMin: 0, selEndMin: 0,
+      submitting: false,
+      cpHours: [7,8,9,10,11,12,13,14,15,16,17]
+    }
+  },
+  computed: {
+    copyDuration() {
+      if (!this.copySource.startTime || !this.copySource.endTime) return 0
+      return Math.round((new Date(this.copySource.endTime) - new Date(this.copySource.startTime)) / 60000)
     }
   },
   created() { this.getList() },
+  beforeDestroy() {
+    document.removeEventListener('mousemove', this._mmMove)
+    document.removeEventListener('mouseup', this._mmUp)
+  },
   methods: {
     getList() {
       this.loading = true
@@ -240,7 +361,113 @@ export default {
       if (!ts) return '—'
       return `${this.fmtDate(ts)} ${this.fmtTime(ts)}`
     },
-    statusLabel(s) { return { '0': '待开始', '1': '已取消', '2': '已完成' }[s] || s }
+    statusLabel(s) { return { '0': '待开始', '1': '已取消', '2': '已完成' }[s] || s },
+
+    openCopy(meeting) {
+      getMeeting(meeting.meetingId).then(res => {
+        this.copySource = res.data
+        this.copyForm = {
+          date: this.fmtDate(meeting.startTime),
+          campus: meeting.campus || '1园',
+          title: res.data.title || '',
+          description: res.data.description || ''
+        }
+        this.copyStep = 1
+        this.resetSel()
+        this.copyVisible = true
+      })
+    },
+    async goStep2() {
+      if (!this.copyForm.date || !this.copyForm.campus) return
+      this.copyStep = 2
+      this.schedLoading = true
+      this.resetSel()
+      try {
+        const [roomsRes, schedRes] = await Promise.all([
+          allRooms({ status: '0' }),
+          getMeetingSchedule(this.copyForm.date)
+        ])
+        this.campusRooms = (roomsRes.data || [])
+          .filter(r => r.campus === this.copyForm.campus && r.status === '0')
+          .sort((a, b) => (a.roomNumber || '').localeCompare(b.roomNumber || ''))
+        this.dayMeetings = schedRes.data || []
+      } finally { this.schedLoading = false }
+    },
+    resetSel() {
+      this.selRoom = null; this.selStartMin = 0; this.selEndMin = 0
+      this.dragRoom = null; this.dragStartMin = 0; this.dragEndMin = 0
+    },
+    getRoomOccupied(room) {
+      return this.dayMeetings.filter(m =>
+        m.campus === room.campus && m.roomNumber === room.roomNumber && m.status !== '1'
+      )
+    },
+    hourPct(h) { return ((h - CP_START) / (CP_END - CP_START)) * 100 },
+    cpBlockPct(m) {
+      const s = new Date(m.startTime), e = new Date(m.endTime)
+      return this.cpRangePct(s.getHours() * 60 + s.getMinutes(), e.getHours() * 60 + e.getMinutes())
+    },
+    cpRangePct(startMin, endMin) {
+      const left = ((startMin - CP_START * 60) / CP_TOTAL) * 100
+      const width = ((endMin - startMin) / CP_TOTAL) * 100
+      return { left: Math.max(0, left) + '%', width: Math.max(0.5, width) + '%' }
+    },
+    startDrag(event, room) {
+      const rect = event.currentTarget.getBoundingClientRect()
+      this.trackRect = rect; this.dragRoom = room; this.selRoom = null
+      const t = this.xToMins(event.clientX, rect)
+      this.dragStartMin = t; this.dragEndMin = t
+      this._mmMove = e => this.onDragMove(e)
+      this._mmUp = () => this.endDrag()
+      document.addEventListener('mousemove', this._mmMove)
+      document.addEventListener('mouseup', this._mmUp)
+    },
+    onDragMove(event) {
+      if (!this.dragRoom || !this.trackRect) return
+      this.dragEndMin = Math.max(this.dragStartMin + 30, this.xToMins(event.clientX, this.trackRect))
+    },
+    endDrag() {
+      document.removeEventListener('mousemove', this._mmMove)
+      document.removeEventListener('mouseup', this._mmUp)
+      if (this.dragRoom && this.dragEndMin - this.dragStartMin >= 30) {
+        this.selRoom = this.dragRoom; this.selStartMin = this.dragStartMin; this.selEndMin = this.dragEndMin
+      }
+      this.dragRoom = null
+    },
+    xToMins(clientX, rect) {
+      const x = Math.max(0, Math.min(rect.width, clientX - rect.left))
+      return Math.round(((x / rect.width) * CP_TOTAL + CP_START * 60) / 30) * 30
+    },
+    minsToTime(mins) {
+      return `${String(Math.floor(mins / 60)).padStart(2,'0')}:${String(mins % 60).padStart(2,'0')}`
+    },
+    hasOverlap() {
+      const occ = this.getRoomOccupied(this.selRoom)
+      return occ.some(m => {
+        const s = new Date(m.startTime), e = new Date(m.endTime)
+        const sm = s.getHours() * 60 + s.getMinutes(), em = e.getHours() * 60 + e.getMinutes()
+        return this.selStartMin < em && this.selEndMin > sm
+      })
+    },
+    confirmCopy() {
+      if (this.hasOverlap()) { this.$message.warning('所选时段与已有会议冲突，请重新选择'); return }
+      this.submitting = true
+      const d = this.copyForm.date
+      addMeeting({
+        title: this.copyForm.title, campus: this.copyForm.campus,
+        roomId: this.selRoom.roomId, roomNumber: this.selRoom.roomNumber,
+        category: this.copySource.category, frequency: this.copySource.frequency,
+        meetingType: this.copySource.meetingType || '0',
+        startTime: `${d} ${this.minsToTime(this.selStartMin)}:00`,
+        endTime: `${d} ${this.minsToTime(this.selEndMin)}:00`,
+        hostUser: this.copySource.hostUser, hostName: this.copySource.hostName,
+        leadDept: this.copySource.leadDept, description: this.copyForm.description, status: '0'
+      }).then(() => {
+        this.msgSuccess('复制预约成功')
+        this.copyVisible = false
+        this.getList()
+      }).finally(() => { this.submitting = false })
+    }
   }
 }
 </script>
@@ -266,7 +493,7 @@ export default {
 .th-time    { width: 138px; flex-shrink: 0; }
 .th-host    { width: 116px; flex-shrink: 0; }
 .th-status  { width: 80px; flex-shrink: 0; }
-.th-actions { width: 190px; flex-shrink: 0; }
+.th-actions { width: 248px; flex-shrink: 0; }
 
 /* ── 表格容器 ── */
 .mm-table {
@@ -333,6 +560,7 @@ export default {
 .mm-btn-default { background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; }
 .mm-btn-danger  { background: #ef4444; color: #fff; }
 .mm-btn-warning { background: #f59e0b; color: #fff; }
+.mm-btn-primary { background: #2563eb; color: #fff; }
 
 .mm-empty { text-align: center; color: #9ca3af; padding: 48px 0; font-size: 13px; }
 
@@ -400,4 +628,46 @@ export default {
 .dd-footer > div { display: flex; }
 .dd-footer > div > * + * { margin-left: 8px; }
 .mm-flex-row { display: flex; align-items: center; }
+
+/* ── 复制预约弹窗 ── */
+.bk-steps { display:flex; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; margin-bottom:20px; }
+.bk-step { flex:1; display:flex; flex-direction:column; align-items:center; padding:14px 12px; background:#f9fafb; }
+.bk-step.is-active { background:#eef2ff; border-bottom:3px solid #2563eb; }
+.bk-step.is-done   { background:#f0fdf4; border-bottom:3px solid #16a34a; }
+.bk-step-circle { width:26px; height:26px; border-radius:50%; background:#d1d5db; color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; margin-bottom:6px; }
+.bk-step.is-active .bk-step-circle { background:#2563eb; }
+.bk-step.is-done   .bk-step-circle { background:#16a34a; }
+.bk-step-label { font-size:13px; color:#6b7280; text-align:center; }
+.bk-step.is-active .bk-step-label { color:#2563eb; font-weight:600; }
+.bk-step.is-done   .bk-step-label { color:#16a34a; }
+.cp-source-bar { display:flex; flex-wrap:wrap; gap:20px; background:#f0f5ff; border:1px solid #c7d7fb; border-radius:8px; padding:12px 18px; font-size:13px; color:#374151; }
+.cp-src-item b { color:#1e3a8a; }
+.cp-tl-topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.cp-tl-info { font-size:13px; font-weight:500; color:#374151; }
+.cp-flex-12 { display:flex; align-items:center; gap:12px; }
+.cp-leg { display:flex; align-items:center; gap:5px; font-size:12px; color:#6b7280; }
+.cp-swatch { display:inline-block; width:16px; height:10px; border-radius:3px; }
+.cp-swatch-occ { background:repeating-linear-gradient(45deg,#d1d5db,#d1d5db 3px,#e5e7eb 3px,#e5e7eb 7px); border:1px solid #9ca3af; }
+.cp-swatch-sel { background:#2563eb; }
+.cp-timeline { min-width:700px; overflow-x:auto; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; }
+.cp-head { display:flex; background:#f9fafb; border-bottom:2px solid #e5e7eb; padding:8px 0; }
+.cp-room-col { width:140px; flex-shrink:0; padding:0 10px; display:flex; align-items:center; font-size:12px; color:#6b7280; font-weight:600; }
+.cp-hours { flex:1; display:flex; }
+.cp-hour { flex:1; font-size:11px; color:#9ca3af; text-align:left; padding-left:4px; }
+.cp-row { display:flex; align-items:stretch; border-bottom:1px solid #f3f4f6; min-height:60px; }
+.cp-row:last-child { border-bottom:none; }
+.cp-room-col { flex-direction:column; justify-content:center; align-items:flex-start; }
+.cp-rnum { font-size:13px; font-weight:600; color:#374151; }
+.cp-rinfo { font-size:11px; color:#9ca3af; }
+.cp-track { flex:1; position:relative; background:#fafafa; cursor:crosshair; }
+.cp-vline { position:absolute; top:0; bottom:0; width:1px; background:#e5e7eb; pointer-events:none; }
+.cp-occ { position:absolute; top:5px; bottom:5px; border-radius:4px; background:repeating-linear-gradient(45deg,#d1d5db,#d1d5db 4px,#e5e7eb 4px,#e5e7eb 10px); border:1px solid #9ca3af; pointer-events:none; }
+.cp-sel { position:absolute; top:5px; bottom:5px; border-radius:4px; background:#2563eb; opacity:.85; pointer-events:none; display:flex; align-items:center; justify-content:center; }
+.cp-sel-txt { font-size:11px; color:#fff; font-weight:600; white-space:nowrap; }
+.cp-drag-preview { opacity:.5; }
+.cp-meta-form { margin-top:14px; }
+.cp-sel-bar { display:flex; align-items:center; justify-content:space-between; background:#f0fdf4; border:1px solid #86efac; border-radius:6px; padding:10px 16px; margin-top:4px; }
+.cp-sel-bar-text { font-size:13px; color:#166534; }
+.cp-sel-bar-text b { font-weight:700; }
+.cp-sel-placeholder { font-size:13px; color:#9ca3af; font-style:italic; }
 </style>

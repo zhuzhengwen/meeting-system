@@ -82,6 +82,7 @@
         <div class="mm-td sq-actions">
           <el-button size="small" @click="showDetail(m)">详情</el-button>
           <el-button size="small" type="primary" @click="openCopy(m)">复制预约</el-button>
+          <el-button v-if="m.status==='2' && m.meetingType!=='1'" size="small" type="warning" @click="openInspect(m)">交接</el-button>
         </div>
       </div>
 
@@ -146,7 +147,11 @@
       </div>
       <div slot="footer" class="dd-footer">
         <el-button size="small" @click="detailVisible = false">关闭</el-button>
-        <el-button size="small" type="primary" @click="openCopy(detail); detailVisible = false">复制预约</el-button>
+        <div>
+          <el-button v-if="detail.status==='2' && detail.meetingType!=='1'" size="small" type="warning"
+            @click="openInspect(detail); detailVisible=false">交接</el-button>
+          <el-button size="small" type="primary" @click="openCopy(detail); detailVisible = false">复制预约</el-button>
+        </div>
       </div>
     </el-dialog>
 
@@ -268,12 +273,41 @@
       </template>
     </el-dialog>
 
+    <!-- 交接弹窗 -->
+    <el-dialog
+      :title="'交接确认 — ' + (inspectMeeting ? inspectMeeting.title : '')"
+      :visible.sync="inspectOpen" width="480px" append-to-body>
+      <el-form :model="inspectForm" label-width="80px">
+        <el-form-item label="检查结果">
+          <el-radio-group v-model="inspectForm.result">
+            <el-radio label="0">正常</el-radio>
+            <el-radio label="1">有设备损坏</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item v-if="inspectForm.result==='1'" label="损坏设备">
+          <el-checkbox-group v-model="damagedArr">
+            <el-checkbox v-for="eq in splitEq(inspectRoomEquip)" :key="eq" :label="eq">{{ eq }}</el-checkbox>
+          </el-checkbox-group>
+          <el-input v-model="customDamaged" placeholder="其他损坏设备（逗号分隔）" size="small" style="margin-top:8px" />
+        </el-form-item>
+        <el-form-item label="备注">
+          <el-input v-model="inspectForm.note" type="textarea" :rows="2" placeholder="可填写说明或问题描述" />
+        </el-form-item>
+        <el-alert v-if="inspectForm.result==='1'" type="warning" :closable="false" show-icon
+          title="确认后会议室将标记为【设备异常】，无法接受新预约，请及时安排维修并解除异常状态。" />
+      </el-form>
+      <div slot="footer">
+        <el-button type="primary" :loading="inspectSaving" @click="submitInspect">提 交</el-button>
+        <el-button @click="inspectOpen=false">取 消</el-button>
+      </div>
+    </el-dialog>
+
   </div>
 </template>
 
 <script>
 import { listMeeting, getMeeting, addMeeting, getMeetingSchedule } from '@/api/mms/meeting'
-import { allRooms } from '@/api/mms/room'
+import { allRooms, getRoom, submitInspection } from '@/api/mms/room'
 
 const CP_START = 7
 const CP_END = 18
@@ -325,7 +359,15 @@ export default {
       selStartMin: 0,
       selEndMin: 0,
       submitting: false,
-      cpHours: [7,8,9,10,11,12,13,14,15,16,17]
+      cpHours: [7,8,9,10,11,12,13,14,15,16,17],
+      // 交接
+      inspectOpen: false,
+      inspectMeeting: null,
+      inspectForm: { roomId: null, meetingId: null, inspectType: '0', result: '0', damagedEquip: '', note: '' },
+      inspectRoomEquip: '',
+      damagedArr: [],
+      customDamaged: '',
+      inspectSaving: false
     }
   },
   computed: {
@@ -503,7 +545,38 @@ export default {
       if (!ts) return '—'
       return `${this.fmtDate(ts)} ${this.fmtTime(ts)}`
     },
-    statusLabel(s) { return { '0': '待开始', '1': '已取消', '2': '已完成' }[s] || s }
+    statusLabel(s) { return { '0': '待开始', '1': '已取消', '2': '已完成' }[s] || s },
+
+    openInspect(meeting) {
+      getMeeting(meeting.meetingId).then(res => {
+        const m = res.data
+        this.inspectMeeting = m
+        this.damagedArr = []
+        this.customDamaged = ''
+        this.inspectRoomEquip = ''
+        this.inspectForm = { roomId: m.roomId, meetingId: m.meetingId, inspectType: '0', result: '0', damagedEquip: '', note: '' }
+        if (m.roomId) {
+          getRoom(m.roomId).then(r => { this.inspectRoomEquip = r.data.equipment || '' })
+        }
+        this.inspectOpen = true
+      })
+    },
+    submitInspect() {
+      let damaged = [...this.damagedArr]
+      if (this.customDamaged.trim()) {
+        damaged = damaged.concat(this.customDamaged.trim().split(',').map(s => s.trim()).filter(Boolean))
+      }
+      this.inspectForm.damagedEquip = damaged.join(',')
+      this.inspectSaving = true
+      submitInspection(this.inspectForm).then(() => {
+        this.inspectSaving = false
+        this.inspectOpen = false
+        const abnormal = this.inspectForm.result === '1'
+        this.msgSuccess(abnormal ? '已记录异常，会议室已标记为不可预约' : '交接完成，状态正常')
+        this.getList()
+      }).catch(() => { this.inspectSaving = false })
+    },
+    splitEq(eq) { return eq ? eq.split(',').map(s => s.trim()).filter(Boolean) : [] }
   }
 }
 </script>
@@ -537,7 +610,7 @@ export default {
 .sq-dept    { width: 84px;  flex-shrink: 0; }
 .sq-att     { width: 200px; flex-shrink: 0; }
 .sq-status  { width: 76px;  flex-shrink: 0; }
-.sq-actions { width: 148px; flex-shrink: 0; }
+.sq-actions { width: 210px; flex-shrink: 0; }
 
 /* ── 共用表格样式 ── */
 .mm-table { background:#fff; border:1px solid #e5e7eb; border-radius:10px; overflow:hidden; }
