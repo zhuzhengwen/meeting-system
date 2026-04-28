@@ -38,7 +38,11 @@
       "PowerShell($env:PGPASSWORD=\"postgres\"; & \"D:\\\\pgsql\\\\bin\\\\psql.exe\" -U postgres -l 2>&1)",
       "PowerShell($env:PGPASSWORD=\"postgres\"; & \"D:\\\\pgsql\\\\bin\\\\psql.exe\" -U postgres -d postgres -c \"ALTER TABLE mms_meeting_attendee ADD COLUMN IF NOT EXISTS email VARCHAR\\(200\\) DEFAULT '', ADD COLUMN IF NOT EXISTS notify_email CHAR\\(1\\) DEFAULT '0'; COMMENT ON COLUMN mms_meeting_attendee.email IS '参会人邮箱'; COMMENT ON COLUMN mms_meeting_attendee.notify_email IS '是否邮件通知：0否 1是';\" 2>&1)",
       "PowerShell($env:PGPASSWORD=\"postgres\"; & \"D:\\\\pgsql\\\\bin\\\\psql.exe\" -U postgres -d postgres -f \"D:\\\\ruoyi\\\\RuoYi-Vue-PostgreSQL\\\\sql\\\\patch_add_email_columns.sql\" 2>&1)",
-      "PowerShell($env:PGPASSWORD=\"postgres\"; & \"D:\\\\pgsql\\\\bin\\\\psql.exe\" -U postgres -d postgres -c \"\\\\d mms_meeting_attendee\" 2>&1)"
+      "PowerShell($env:PGPASSWORD=\"postgres\"; & \"D:\\\\pgsql\\\\bin\\\\psql.exe\" -U postgres -d postgres -c \"\\\\d mms_meeting_attendee\" 2>&1)",
+      "Bash(grep -E \"\\\\.\\(java|js|vue\\)$\")",
+      "Bash(grep \"\\\\.java$\")",
+      "Bash(find \"D:\\\\ruoyi\\\\RuoYi-Vue-PostgreSQL\\\\ruoyi-ui\\\\src\\\\views\\\\mms\" -type f -name \"*.vue\" -exec basename {} \\\\;)",
+      "Bash(git checkout *)"
     ]
   }
 }

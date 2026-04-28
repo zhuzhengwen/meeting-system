@@ -1,7 +1,7 @@
 <template>
   <div :class="classObj" class="app-wrapper" :style="{'--current-color': theme}">
     <div v-if="device==='mobile'&&sidebar.opened" class="drawer-bg" @click="handleClickOutside"/>
-    <sidebar class="sidebar-container" :style="{ backgroundColor: sideTheme === 'theme-dark' ? variables.menuBg : variables.menuLightBg }" />
+    <sidebar v-if="!singleMenu" class="sidebar-container" :style="{ backgroundColor: sideTheme === 'theme-dark' ? variables.menuBg : variables.menuLightBg }" />
     <div :class="{hasTagsView:needTagsView}" class="main-container">
       <div :class="{'fixed-header':fixedHeader}">
         <navbar />
@@ -43,12 +43,17 @@ export default {
       needTagsView: state => state.settings.tagsView,
       fixedHeader: state => state.settings.fixedHeader
     }),
+    singleMenu() {
+      const routers = this.$store.getters.sidebarRouters || []
+      return routers.filter(r => !r.hidden).length === 1
+    },
     classObj() {
       return {
-        hideSidebar: !this.sidebar.opened,
-        openSidebar: this.sidebar.opened,
+        hideSidebar: this.singleMenu || !this.sidebar.opened,
+        openSidebar: !this.singleMenu && this.sidebar.opened,
         withoutAnimation: this.sidebar.withoutAnimation,
-        mobile: this.device === 'mobile'
+        mobile: this.device === 'mobile',
+        'no-sidebar': this.singleMenu
       }
     },
     variables() {
@@ -100,6 +105,10 @@ export default {
 
   .hideSidebar .fixed-header {
     width: calc(100% - 54px)
+  }
+
+  .no-sidebar .fixed-header {
+    width: 100%;
   }
 
   .mobile .fixed-header {

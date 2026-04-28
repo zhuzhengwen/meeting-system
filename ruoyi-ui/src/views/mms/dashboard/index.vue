@@ -8,13 +8,13 @@
         <div class="mms-today-str">{{ todayLabel }}</div>
       </div>
       <div class="mms-actions">
-        <router-link to="/mms/booking">
+        <router-link v-hasPermi="['mms:meeting:add']" to="/mms/booking">
           <el-button type="primary" size="small" icon="el-icon-circle-plus-outline">预约会议</el-button>
         </router-link>
-        <router-link to="/mms/schedule">
+        <router-link v-hasPermi="['mms:meeting:list']" to="/mms/schedule">
           <el-button size="small" icon="el-icon-date">会议排程</el-button>
         </router-link>
-        <router-link to="/mms/search">
+        <router-link v-hasPermi="['mms:meeting:list']" to="/mms/search">
           <el-button size="small" icon="el-icon-search">会议查询</el-button>
         </router-link>
       </div>
@@ -235,7 +235,6 @@ export default {
           m => m.hostUser === username || m.createBy === username
         ).length
         this.todayMeetings = this.computeLanes(all)
-        // 计算当前占用
         const now = new Date()
         this.currentOccupied = new Set(
           all.filter(m => new Date(m.startTime) <= now && new Date(m.endTime) > now)

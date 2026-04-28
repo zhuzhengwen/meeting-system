@@ -80,8 +80,8 @@
         </div>
         <div class="mm-td th-actions">
           <button class="mm-btn mm-btn-default" @click="showDetail(m)">详情</button>
-          <button v-if="m.status==='0'" class="mm-btn mm-btn-danger" @click="handleCancel(m)">取消</button>
-          <button v-if="m.status==='0'" class="mm-btn mm-btn-warning" @click="handleComplete(m)">完成</button>
+          <button v-if="m.status==='0'" v-hasPermi="['mms:meeting:edit']" class="mm-btn mm-btn-danger" @click="handleCancel(m)">取消</button>
+          <button v-if="m.status==='0'" v-hasPermi="['mms:meeting:edit']" class="mm-btn mm-btn-warning" @click="handleComplete(m)">完成</button>
         </div>
       </div>
 
@@ -151,9 +151,9 @@
       <div slot="footer" class="dd-footer">
         <el-button size="small" @click="detailVisible=false">关闭</el-button>
         <div>
-          <el-button v-if="detailData.status==='0'" size="small" type="warning"
+          <el-button v-if="detailData.status==='0'" v-hasPermi="['mms:meeting:edit']" size="small" type="warning"
             icon="el-icon-close" @click="handleCancel(detailData)">取消会议</el-button>
-          <el-button v-if="detailData.status==='0'" size="small" type="success"
+          <el-button v-if="detailData.status==='0'" v-hasPermi="['mms:meeting:edit']" size="small" type="success"
             icon="el-icon-check" @click="handleComplete(detailData)">标记完成</el-button>
         </div>
       </div>

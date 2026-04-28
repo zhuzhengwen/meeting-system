@@ -1,8 +1,12 @@
 <template>
   <div class="navbar">
-    <hamburger id="hamburger-container" :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />
+    <hamburger v-if="!singleMenu" id="hamburger-container" :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />
+    <div v-if="singleMenu" class="single-menu-title">
+      <i :class="singleMenuIcon" class="single-menu-icon"></i>
+      {{ singleMenuTitle }}
+    </div>
 
-    <breadcrumb id="breadcrumb-container" class="breadcrumb-container" v-if="!topNav"/>
+    <breadcrumb id="breadcrumb-container" class="breadcrumb-container" v-if="!topNav && !singleMenu"/>
     <top-nav id="topmenu-container" class="topmenu-container" v-if="topNav"/>
 
     <div class="right-menu">
@@ -55,8 +59,24 @@ export default {
       'sidebar',
       'avatar',
       'name',
-      'device'
+      'device',
+      'sidebarRouters'
     ]),
+    singleMenu() {
+      const routers = this.sidebarRouters || []
+      return routers.filter(r => !r.hidden).length === 1
+    },
+    singleMenuTitle() {
+      const routers = this.sidebarRouters || []
+      const first = routers.find(r => !r.hidden)
+      return first && first.meta ? first.meta.title : ''
+    },
+    singleMenuIcon() {
+      const routers = this.sidebarRouters || []
+      const first = routers.find(r => !r.hidden)
+      const icon = first && first.meta ? first.meta.icon : ''
+      return icon ? `el-icon-${icon}` : 'el-icon-menu'
+    },
     setting: {
       get() {
         return this.$store.state.settings.showSettings
@@ -109,6 +129,24 @@ export default {
     transition: background .3s;
     -webkit-tap-highlight-color: transparent;
     &:hover { background: rgba(0,0,0,.025) }
+  }
+
+  .single-menu-title {
+    float: left;
+    height: 50px;
+    line-height: 50px;
+    padding: 0 18px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .single-menu-icon {
+    font-size: 16px;
+    color: var(--current-color, #409eff);
   }
 
   .breadcrumb-container { float: left; }
