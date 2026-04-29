@@ -58,6 +58,12 @@
             :rules="[{required:true,message:'请选择日期',trigger:'change'}]">
             <el-date-picker v-model="booking.date" type="date" placeholder="选择日期"
               value-format="yyyy-MM-dd" style="width:100%" :picker-options="dateOptions" />
+            <div class="bk-date-shortcuts">
+              <el-button v-for="(s, i) in dateShortcuts" :key="i" size="mini"
+                :type="booking.date === s.value ? 'primary' : ''"
+                :plain="booking.date !== s.value"
+                @click="booking.date = s.value">{{ s.label }}</el-button>
+            </div>
           </el-form-item>
           <template v-if="meetingType==='1'">
             <el-form-item label="开始时间" prop="onlineStart"
@@ -485,6 +491,17 @@ export default {
     }
   },
   computed: {
+    dateShortcuts() {
+      const fmt = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+      const t = new Date()
+      const t1 = new Date(t); t1.setDate(t.getDate() + 1)
+      const t2 = new Date(t); t2.setDate(t.getDate() + 2)
+      return [
+        { label: '今天', value: fmt(t) },
+        { label: '明天', value: fmt(t1) },
+        { label: '后天', value: fmt(t2) }
+      ]
+    },
     attendeesWithEmail() {
       return this.meetingForm.attendees.filter(u => u.source === 'ldap' && u.email && u.email.trim()).length
     },
@@ -1297,6 +1314,12 @@ export default {
   border: 1px solid #dbeafe;
 }
 .bk-summary-highlight .bk-summary-label { color: #2563eb; }
+.bk-date-shortcuts {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+  .el-button { border-radius: 4px; }
+}
 .bk-summary-date {
   font-size: 16px;
   color: #1a4ad4;
