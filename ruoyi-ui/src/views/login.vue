@@ -180,25 +180,24 @@
             </div>
           </el-form-item>
 
-          <template v-if="loginForm.loginType === '0'">
-            <el-form-item prop="code">
-              <div class="lp-field">
-                <label>验证码</label>
-                <div class="lp-code-row">
-                  <el-input v-model="loginForm.code" placeholder="请输入验证码"
-                    auto-complete="off" size="medium"
-                    @keyup.enter.native="handleLogin" />
-                  <div class="lp-captcha" @click="getCode" title="点击刷新">
-                    <img :src="codeUrl" alt="验证码"/>
-                    <div class="lp-captcha-mask"><i class="el-icon-refresh"></i></div>
-                  </div>
+          <!-- 验证码与记住密码：始终占位，域账号时隐藏 -->
+          <el-form-item prop="code" :class="{ 'lp-hidden': loginForm.loginType !== '0' }">
+            <div class="lp-field">
+              <label>验证码</label>
+              <div class="lp-code-row">
+                <el-input v-model="loginForm.code" placeholder="请输入验证码"
+                  auto-complete="off" size="medium"
+                  @keyup.enter.native="handleLogin" />
+                <div class="lp-captcha" @click="getCode" title="点击刷新">
+                  <img :src="codeUrl" alt="验证码"/>
+                  <div class="lp-captcha-mask"><i class="el-icon-refresh"></i></div>
                 </div>
               </div>
-            </el-form-item>
-            <div class="lp-remember">
-              <el-checkbox v-model="loginForm.rememberMe">记住密码</el-checkbox>
             </div>
-          </template>
+          </el-form-item>
+          <div class="lp-remember" :class="{ 'lp-hidden': loginForm.loginType !== '0' }">
+            <el-checkbox v-model="loginForm.rememberMe">记住密码</el-checkbox>
+          </div>
 
           <el-button :loading="loading" type="primary" class="lp-btn"
             @click.native.prevent="handleLogin">
@@ -537,19 +536,19 @@ export default {
   .el-input__inner {
     height: 44px !important;
     border-radius: 10px !important;
-    border: 1.5px solid #e2e8f0 !important;
-    background: #f8fafc !important;
+    border: 1.5px solid #c8d0dc !important;
+    background: #ffffff !important;
     color: #0f172a !important;
     font-size: 14px !important;
     padding: 0 14px !important;
-    box-shadow: none !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
     transition: all 0.18s !important;
     &:focus {
       border-color: #2563eb !important;
       background: #ffffff !important;
-      box-shadow: 0 0 0 3px rgba(37,99,235,0.1) !important;
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.12) !important;
     }
-    &::placeholder { color: #c1cbd8 !important; font-size: 13.5px !important; }
+    &::placeholder { color: #b0bac6 !important; font-size: 13.5px !important; }
   }
   .el-input__suffix { line-height: 44px; }
   .el-input__prefix { display: none; }
@@ -569,6 +568,11 @@ export default {
 
 /* 验证码 */
 .lp-code-row { display: flex; gap: 10px; align-items: center; }
+.lp-hidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .lp-captcha {
   position: relative;
   width: 110px;
@@ -576,7 +580,7 @@ export default {
   flex-shrink: 0;
   border-radius: 10px;
   overflow: hidden;
-  border: 1.5px solid #e2e8f0;
+  border: 1.5px solid #c8d0dc;
   cursor: pointer;
   transition: border-color 0.18s;
   &:hover { border-color: #2563eb; .lp-captcha-mask { opacity: 1; } }
