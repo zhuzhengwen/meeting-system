@@ -21,6 +21,8 @@ public class MmsTracking extends BaseEntity
 
     @TableId(value = "tracking_id", type = IdType.AUTO)
     private Long trackingId;
+    /** 责任部门ID（对接 @DataScope 行级权限） */
+    private Long deptId;
     private Integer seqNo;
     private Long meetingId;
     private String meetingTitle;
@@ -45,6 +47,9 @@ public class MmsTracking extends BaseEntity
 
     public Long getTrackingId() { return trackingId; }
     public void setTrackingId(Long trackingId) { this.trackingId = trackingId; }
+
+    public Long getDeptId() { return deptId; }
+    public void setDeptId(Long deptId) { this.deptId = deptId; }
 
     public Integer getSeqNo() { return seqNo; }
     public void setSeqNo(Integer seqNo) { this.seqNo = seqNo; }

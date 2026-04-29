@@ -80,9 +80,9 @@
         </div>
         <div class="mm-td th-actions">
           <button class="mm-btn mm-btn-default" @click="showDetail(m)">详情</button>
+          <button class="mm-btn mm-btn-primary" @click="openCopy(m)">复制</button>
           <button v-if="m.status==='0'" v-hasPermi="['mms:meeting:edit']" class="mm-btn mm-btn-danger" @click="handleCancel(m)">取消</button>
           <button v-if="m.status==='0'" v-hasPermi="['mms:meeting:edit']" class="mm-btn mm-btn-warning" @click="handleComplete(m)">完成</button>
-          <button class="mm-btn mm-btn-primary" @click="openCopy(m)">复制预约</button>
         </div>
       </div>
 
@@ -156,7 +156,7 @@
             icon="el-icon-close" @click="handleCancel(detailData)">取消会议</el-button>
           <el-button v-if="detailData.status==='0'" v-hasPermi="['mms:meeting:edit']" size="small" type="success"
             icon="el-icon-check" @click="handleComplete(detailData)">标记完成</el-button>
-          <el-button size="small" type="primary" @click="openCopy(detailData); detailVisible=false">复制预约</el-button>
+          <el-button size="small" type="primary" @click="openCopy(detailData); detailVisible=false">复制</el-button>
         </div>
       </div>
     </el-dialog>

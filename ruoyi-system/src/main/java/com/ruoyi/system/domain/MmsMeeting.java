@@ -23,6 +23,8 @@ public class MmsMeeting extends BaseEntity
 
     @TableId(value = "meeting_id", type = IdType.AUTO)
     private Long meetingId;
+    /** 申请部门ID（对接 @DataScope 行级权限） */
+    private Long deptId;
     private String meetingNo;
     private String title;
     private String campus;
@@ -62,6 +64,9 @@ public class MmsMeeting extends BaseEntity
 
     public Long getMeetingId() { return meetingId; }
     public void setMeetingId(Long meetingId) { this.meetingId = meetingId; }
+
+    public Long getDeptId() { return deptId; }
+    public void setDeptId(Long deptId) { this.deptId = deptId; }
 
     public String getMeetingNo() { return meetingNo; }
     public void setMeetingNo(String meetingNo) { this.meetingNo = meetingNo; }

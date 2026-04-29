@@ -62,32 +62,27 @@
                 <version>${bitwalker.version}</version>
             </dependency>
 			
-            <!-- pagehelper 分页插件 -->
+            <!-- pagehelper 分页插件（排除自带的 mybatis-spring-boot-starter，由 MyBatis-Plus 统一托管） -->
             <dependency>
                 <groupId>com.github.pagehelper</groupId>
                 <artifactId>pagehelper-spring-boot-starter</artifactId>
                 <version>${pagehelper.boot.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.mybatis.spring.boot</groupId>
+                        <artifactId>mybatis-spring-boot-starter</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
-            <!-- MyBatis-Plus -->
+            <!-- MyBatis-Plus（统一管理 mybatis + mybatis-spring） -->
             <dependency>
                 <groupId>com.baomidou</groupId>
                 <artifactId>mybatis-plus-boot-starter</artifactId>
                 <version>${mybatis-plus.version}</version>
             </dependency>
 
-            <!-- 锁定版本，覆盖 pagehelper 传递的旧版，与 mybatis-plus 3.5.1 保持一致 -->
-            <dependency>
-                <groupId>org.mybatis</groupId>
-                <artifactId>mybatis</artifactId>
-                <version>3.5.9</version>
-            </dependency>
-            <dependency>
-                <groupId>org.mybatis</groupId>
-                <artifactId>mybatis-spring</artifactId>
-                <version>2.0.7</version>
-            </dependency>
-            <!-- pagehelper 5.1.x 带入 jsqlparser:3.2，MP 3.5.1 的 PaginationInnerInterceptor 需要 4.3+ -->
+            <!-- jsqlparser：MP PaginationInnerInterceptor 需要 4.3+ -->
             <dependency>
                 <groupId>com.github.jsqlparser</groupId>
                 <artifactId>jsqlparser</artifactId>

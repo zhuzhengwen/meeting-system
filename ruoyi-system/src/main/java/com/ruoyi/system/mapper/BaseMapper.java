@@ -2,6 +2,8 @@ package com.ruoyi.system.mapper;
 
 import java.util.Arrays;
 import java.util.List;
+
+import com.ruoyi.common.annotation.DataScope;
 import org.apache.ibatis.annotations.Param;
 
 /**

@@ -9,7 +9,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.ruoyi.common.annotation.DataScope;
 import com.ruoyi.common.exception.CustomException;
+import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.system.config.BpmProperties;
 import com.ruoyi.system.domain.MmsMeeting;
 import com.ruoyi.system.domain.MmsMeetingAttendee;
@@ -44,6 +46,7 @@ public class MmsMeetingServiceImpl implements IMmsMeetingService
     }
 
     @Override
+    @DataScope(deptAlias = "d")
     public List<MmsMeeting> selectMeetingList(MmsMeeting meeting) {
         return meetingMapper.selectByCondition(meeting);
     }
@@ -63,6 +66,13 @@ public class MmsMeetingServiceImpl implements IMmsMeetingService
         }
         if (meeting.getStatus() == null || meeting.getStatus().isEmpty()) {
             meeting.setStatus(bpmProperties.isEnabled() ? "3" : "0");
+        }
+        // 自动填入申请人所在部门，供数据权限过滤使用
+        if (meeting.getDeptId() == null) {
+            try {
+                Long deptId = SecurityUtils.getLoginUser().getUser().getDeptId();
+                meeting.setDeptId(deptId);
+            } catch (Exception ignored) {}
         }
         checkRoomConflict(meeting, 0L);
         int rows = meetingMapper.insert(meeting);

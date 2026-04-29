@@ -34,7 +34,8 @@
     <!-- ③ 主内容区 -->
     <div class="mms-grid">
 
-      <!-- 左列：日历 -->
+      <!-- 左列：日历 + 待跟进 -->
+      <div class="mms-left-col">
       <div class="mms-panel mms-cal-panel">
         <div class="mms-panel-hdr">
           <span class="mms-panel-title">近2日我的会议</span>
@@ -83,6 +84,8 @@
           </div>
         </div>
       </div>
+
+      </div><!-- /mms-left-col -->
 
       <!-- 右列 -->
       <div class="mms-right">
@@ -143,17 +146,66 @@
 
       </div>
     </div>
+
+    <!-- ④ 待跟进事项（全宽） -->
+    <div class="mms-panel mms-tracking-panel" style="margin-top:16px">
+      <div class="mms-panel-hdr">
+        <span class="mms-panel-title">待跟进事项</span>
+        <router-link to="/mms/tracking">
+          <el-button size="mini" type="text">查看全部 →</el-button>
+        </router-link>
+      </div>
+      <div v-if="!trackingItems.length" class="mms-empty">暂无待跟进事项</div>
+      <div v-else class="mms-tk-list">
+        <div v-for="(row, idx) in trackingItems" :key="row.trackingId" class="mms-tk-card">
+          <div class="mms-tk-seq">{{ idx + 1 }}</div>
+          <div class="mms-tk-body">
+            <div class="mms-tk-toprow">
+              <div class="mms-tk-tags">
+                <span v-if="row.category" class="mms-ptag" :class="'mms-cat-' + row.category">{{ row.category }}</span>
+                <span v-if="row.frequency" class="mms-ptag mms-freq-tag">{{ freqLabel(row.frequency) }}</span>
+                <span v-if="isOverdue(row)" class="mms-ptag mms-tk-overdue">已逾期</span>
+              </div>
+              <div class="mms-tk-right">
+                <span v-if="row.plannedDate" class="mms-tk-date" :class="isOverdue(row) ? 'mms-tk-date-red' : ''">
+                  <i class="el-icon-date"></i> {{ row.plannedDate }}
+                </span>
+                <el-button size="mini" type="primary" @click="goTracking(row)">更新进度</el-button>
+              </div>
+            </div>
+            <div class="mms-tk-title">{{ row.project }}</div>
+            <div class="mms-tk-meta">
+              <template v-if="row.meetingTitle"><i class="el-icon-s-order"></i> {{ row.meetingTitle }} · </template>
+              <template v-if="row.trackDept">跟踪：{{ row.trackDept }} · </template>
+              <template v-if="row.leadDept">主导：{{ row.leadDept }}</template>
+            </div>
+            <div v-if="row.directorNote" class="mms-tk-hint">
+              <i class="el-icon-location-information mms-tk-pin"></i>
+              <span class="mms-tk-hint-label">会议主管指示</span>
+              <span class="mms-tk-hint-text">{{ row.directorNote }}</span>
+            </div>
+            <div v-if="row.progressList && row.progressList.length" class="mms-tk-progress">
+              <i class="el-icon-document"></i>
+              <span v-for="(p, i) in row.progressList.slice(-1)" :key="i">
+                {{ p.progressDate }}：{{ p.content }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
 <script>
 import { getMeetingSchedule, listMeeting } from '@/api/mms/meeting'
 import { allRooms } from '@/api/mms/room'
-import { listTracking } from '@/api/mms/tracking'
+import { listTracking, addProgress } from '@/api/mms/tracking'
 
 const START_HOUR = 8
 const END_HOUR = 21
-const HOUR_H = 48
+const HOUR_H = 36
 
 const CAT_COLORS = {
   '生产': '#16a34a', '研发': '#7c3aed', '业务': '#d97706',
@@ -175,6 +227,7 @@ export default {
       tomorrowMeetings: [],
       periodicMeetings: [],
       allRoomsData: [],
+      trackingItems: [],
       currentOccupied: new Set(),
       startHour: START_HOUR,
       endHour: END_HOUR,
@@ -257,7 +310,9 @@ export default {
       })
 
       listTracking({ status: '0', pageNum: 1, pageSize: 100 }).then(res => {
-        this.stats.openTracking = (res.rows || []).length
+        const rows = res.rows || []
+        this.stats.openTracking = rows.length
+        this.trackingItems = rows.slice(0, 5)
       })
 
       listMeeting({ pageNum: 1, pageSize: 200 }).then(res => {
@@ -331,6 +386,15 @@ export default {
       if (!ts) return '-'
       const d = new Date(ts)
       return `${d.getMonth()+1}/${d.getDate()}`
+    },
+
+    isOverdue(row) {
+      if (!row.plannedDate) return false
+      return new Date(row.plannedDate) < new Date(todayStr(0))
+    },
+
+    goTracking(row) {
+      this.$router.push({ path: '/mms/tracking', query: { trackingId: row.trackingId } })
     },
 
     daysAgoStr(ts) {
@@ -413,8 +477,11 @@ export default {
 .mms-panel-title { font-size: 14px; font-weight: 600; color: #111827; }
 .mms-empty { text-align: center; color: #9ca3af; font-size: 13px; padding: 28px 0; }
 
+/* ── 左列容器 ── */
+.mms-left-col { display: flex; flex-direction: column; min-width: 0; }
+
 /* ── 日历面板 ── */
-.mms-cal-panel { display: flex; flex-direction: column; }
+.mms-cal-panel { display: flex; flex-direction: column; height: 600px; overflow: hidden; }
 
 .mms-day-badges { display: flex; }
 .mms-day-badges > * + * { margin-left: 6px; }
@@ -437,11 +504,11 @@ export default {
 }
 .mms-col-hd-dim { color: #9ca3af; }
 
-.mms-cal-body { display: flex; padding: 0 18px 16px; overflow-y: auto; max-height: 520px; }
+.mms-cal-body { display: flex; padding: 0 18px 16px; }
 
 .mms-time-col { width: 44px; flex-shrink: 0; }
 .mms-time-cell {
-  height: 48px; display: flex; align-items: flex-start;
+  height: 36px; display: flex; align-items: flex-start;
   justify-content: flex-end; padding-right: 8px; padding-top: 3px;
   font-size: 11px; color: #9ca3af;
 }
@@ -477,8 +544,9 @@ export default {
 }
 
 /* ── 右列 ── */
-.mms-right { display: flex; flex-direction: column; position: sticky; top: 20px; max-height: calc(100vh - 80px); overflow-y: auto; }
+.mms-right { display: flex; flex-direction: column; height: 600px; }
 .mms-right > * + * { margin-top: 16px; }
+.mms-right .mms-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
 
 /* ── 会议室状态 ── */
 .mms-now-badge {
@@ -492,7 +560,7 @@ export default {
   display: flex; flex-direction: column;
 }
 .mms-room-grid > * + * { margin-top: 6px; }
-.mms-room-grid-scroll { max-height: 280px; overflow-y: auto; }
+.mms-room-grid-scroll { flex: 1; overflow-y: auto; }
 .mms-room-chip {
   display: flex; align-items: center;
   padding: 8px 12px; border-radius: 8px; border: 1px solid;
@@ -519,7 +587,7 @@ export default {
 .mms-room-busy .mms-room-status-tag { color: #ef4444; }
 
 /* ── 定期建议 ── */
-.mms-periodic-scroll { max-height: 280px; overflow-y: auto; }
+.mms-periodic-scroll { flex: 1; overflow-y: auto; }
 .mms-periodic-row {
   display: flex; align-items: center;
   padding: 10px 18px;
@@ -554,4 +622,67 @@ export default {
 
 .mms-periodic-ago  { font-size: 11px; font-weight: 600; color: #ef4444; }
 .mms-periodic-date { font-size: 11px; color: #6b7280; margin-top: 2px; }
+
+/* ── 待跟进事项 ── */
+.mms-tracking-panel { }
+.mms-tk-list { padding: 8px 16px 12px; display: flex; flex-direction: column; }
+.mms-tk-list > * + * { margin-top: 10px; }
+
+.mms-tk-card {
+  display: flex; align-items: flex-start;
+  padding: 14px 16px; border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  transition: box-shadow .15s;
+}
+.mms-tk-card:hover { box-shadow: 0 2px 10px rgba(0,0,0,.08); }
+
+.mms-tk-seq {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: #2563eb; color: #fff;
+  font-size: 13px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-right: 14px; margin-top: 2px;
+}
+
+.mms-tk-body { flex: 1; min-width: 0; }
+
+.mms-tk-toprow {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 6px;
+}
+.mms-tk-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+
+.mms-tk-overdue { background: #fee2e2; color: #dc2626; }
+
+.mms-tk-right { display: flex; align-items: center; flex-shrink: 0; margin-left: 12px; }
+.mms-tk-right > * + * { margin-left: 8px; }
+
+.mms-tk-date { font-size: 12px; color: #6b7280; white-space: nowrap; }
+.mms-tk-date-red { color: #dc2626; font-weight: 600; }
+
+.mms-tk-title {
+  font-size: 14px; font-weight: 600; color: #111827;
+  margin-bottom: 4px;
+}
+.mms-tk-meta {
+  font-size: 12px; color: #9ca3af; margin-bottom: 6px;
+}
+.mms-tk-meta i { margin-right: 3px; }
+
+.mms-tk-hint {
+  display: flex; align-items: flex-start;
+  background: #fffbeb; border: 1px solid #fde68a;
+  border-radius: 6px; padding: 7px 10px;
+  font-size: 12px; color: #78350f;
+  margin-bottom: 6px;
+}
+.mms-tk-pin { color: #d97706; font-size: 14px; flex-shrink: 0; margin-right: 5px; margin-top: 1px; }
+.mms-tk-hint-label { font-weight: 600; flex-shrink: 0; margin-right: 6px; }
+.mms-tk-hint-text { color: #92400e; line-height: 1.5; }
+
+.mms-tk-progress {
+  font-size: 12px; color: #6b7280; display: flex; align-items: flex-start;
+}
+.mms-tk-progress i { margin-right: 4px; flex-shrink: 0; margin-top: 2px; }
 </style>

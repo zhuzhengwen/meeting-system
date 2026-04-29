@@ -220,3 +220,70 @@ ALTER TABLE mms_tracking ADD COLUMN IF NOT EXISTS del_flag CHAR(1) DEFAULT '0';
 COMMENT ON COLUMN mms_meeting.del_flag  IS '删除标志：0正常 1已删除';
 COMMENT ON COLUMN mms_room.del_flag     IS '删除标志：0正常 1已删除';
 COMMENT ON COLUMN mms_tracking.del_flag IS '删除标志：0正常 1已删除';
+
+-- ----------------------------
+-- 8. 数据权限字段（dept_id）
+-- 对接 RuoYi @DataScope 机制，用于行级权限过滤
+-- ----------------------------
+ALTER TABLE mms_meeting  ADD COLUMN IF NOT EXISTS dept_id BIGINT;
+ALTER TABLE mms_tracking ADD COLUMN IF NOT EXISTS dept_id BIGINT;
+
+COMMENT ON COLUMN mms_meeting.dept_id  IS '申请部门ID（关联 sys_dept）';
+COMMENT ON COLUMN mms_tracking.dept_id IS '责任部门ID（关联 sys_dept）';
+
+-- ----------------------------
+-- 9. MMS 角色与数据权限配置
+-- 执行前请先确认 sys_dept 中已建好园区/部门结构
+-- ----------------------------
+
+-- 超级管理员角色（role_id=1）：isAdmin()=true，@DataScope 自动跳过，无需配置
+
+-- 园区管理员角色（DATA_SCOPE_CUSTOM=2，在角色管理界面手动勾选对应园区的部门）
+INSERT INTO sys_role (role_name, role_key, role_sort, data_scope, menu_check_strictly, dept_check_strictly, status, del_flag, create_by, create_time, remark)
+VALUES ('1园管理员', 'mms_campus1_admin', 10, '2', true, true, '0', '0', 'admin', now(), '1园所有会议数据');
+INSERT INTO sys_role (role_name, role_key, role_sort, data_scope, menu_check_strictly, dept_check_strictly, status, del_flag, create_by, create_time, remark)
+VALUES ('2园管理员', 'mms_campus2_admin', 11, '2', true, true, '0', '0', 'admin', now(), '2园所有会议数据');
+INSERT INTO sys_role (role_name, role_key, role_sort, data_scope, menu_check_strictly, dept_check_strictly, status, del_flag, create_by, create_time, remark)
+VALUES ('3园管理员', 'mms_campus3_admin', 12, '2', true, true, '0', '0', 'admin', now(), '3园所有会议数据');
+
+-- 部门领导角色（DATA_SCOPE_DEPT_AND_CHILD=4，自动包含本部门及所有下级）
+INSERT INTO sys_role (role_name, role_key, role_sort, data_scope, menu_check_strictly, dept_check_strictly, status, del_flag, create_by, create_time, remark)
+VALUES ('部门领导', 'mms_dept_leader', 13, '4', true, true, '0', '0', 'admin', now(), '本部门及下级会议数据');
+
+-- 普通员工角色（DATA_SCOPE_DEPT=3，仅本部门）
+INSERT INTO sys_role (role_name, role_key, role_sort, data_scope, menu_check_strictly, dept_check_strictly, status, del_flag, create_by, create_time, remark)
+VALUES ('普通员工', 'mms_employee', 14, '3', true, true, '0', '0', 'admin', now(), '仅本部门会议数据');
+
+-- 更新角色序列
+SELECT setval('sys_role_role_id_seq', (SELECT MAX(role_id) FROM sys_role));
+
+-- 为非管理员角色分配 MMS 菜单权限
+-- 园区管理员：全功能（含会议室管理、跟踪事项、查询、删除）
+INSERT INTO sys_role_menu (role_id, menu_id)
+SELECT r.role_id, m.menu_id
+FROM sys_role r,
+     (VALUES (2100),(2101),(2102),(2103),(2104),(2105),(2106),(2107),
+             (2110),(2111),(2112),(2113)) AS m(menu_id)
+WHERE r.role_key IN ('mms_campus1_admin','mms_campus2_admin','mms_campus3_admin')
+ON CONFLICT DO NOTHING;
+
+-- 部门领导：查看+预约+跟踪+修改（无删除、无会议室管理）
+INSERT INTO sys_role_menu (role_id, menu_id)
+SELECT r.role_id, m.menu_id
+FROM sys_role r,
+     (VALUES (2100),(2101),(2102),(2103),(2104),(2105),
+             (2110),(2111),(2112)) AS m(menu_id)
+WHERE r.role_key = 'mms_dept_leader'
+ON CONFLICT DO NOTHING;
+
+-- 普通员工：仪表盘+排程+预约+会议记录（只读，无修改删除）
+INSERT INTO sys_role_menu (role_id, menu_id)
+SELECT r.role_id, m.menu_id
+FROM sys_role r,
+     (VALUES (2100),(2101),(2102),(2103),(2104),(2105),
+             (2110),(2111)) AS m(menu_id)
+WHERE r.role_key = 'mms_employee'
+ON CONFLICT DO NOTHING;
+
+-- 提示：园区管理员配置完角色后，需在【系统管理-角色管理】中为对应角色
+-- 勾选"自定义数据权限"并选择该园区下的所有部门（sys_role_dept 表）

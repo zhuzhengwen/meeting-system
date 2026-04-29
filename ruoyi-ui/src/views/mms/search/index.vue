@@ -81,7 +81,7 @@
         </div>
         <div class="mm-td sq-actions">
           <el-button size="small" @click="showDetail(m)">详情</el-button>
-          <el-button size="small" type="primary" @click="openCopy(m)">复制预约</el-button>
+          <el-button size="small" type="primary" @click="openCopy(m)">复制</el-button>
           <el-button v-if="m.status==='2' && m.meetingType!=='1'" size="small" type="warning" @click="openInspect(m)">交接</el-button>
         </div>
       </div>
@@ -150,7 +150,7 @@
         <div>
           <el-button v-if="detail.status==='2' && detail.meetingType!=='1'" size="small" type="warning"
             @click="openInspect(detail); detailVisible=false">交接</el-button>
-          <el-button size="small" type="primary" @click="openCopy(detail); detailVisible = false">复制预约</el-button>
+          <el-button size="small" type="primary" @click="openCopy(detail); detailVisible = false">复制</el-button>
         </div>
       </div>
     </el-dialog>

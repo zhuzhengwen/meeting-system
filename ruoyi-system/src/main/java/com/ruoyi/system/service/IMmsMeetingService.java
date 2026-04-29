@@ -1,6 +1,7 @@
 package com.ruoyi.system.service;
 
 import java.util.List;
+import com.ruoyi.common.annotation.DataScope;
 import com.ruoyi.system.domain.MmsMeeting;
 import com.ruoyi.system.domain.MmsMeetingAttendee;
 
@@ -11,6 +12,7 @@ public interface IMmsMeetingService
 {
     MmsMeeting selectMeetingById(Long meetingId);
 
+    @DataScope(deptAlias = "d")
     List<MmsMeeting> selectMeetingList(MmsMeeting meeting);
 
     List<MmsMeeting> selectMeetingsByDate(String date);

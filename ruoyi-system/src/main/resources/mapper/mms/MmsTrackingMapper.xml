@@ -5,6 +5,7 @@
 
     <resultMap type="com.ruoyi.system.domain.MmsTracking" id="MmsTrackingResult">
         <result property="trackingId"   column="tracking_id"   />
+        <result property="deptId"       column="dept_id"       />
         <result property="seqNo"        column="seq_no"        />
         <result property="meetingId"    column="meeting_id"    />
         <result property="meetingTitle" column="meeting_title" />
@@ -35,35 +36,40 @@
     </resultMap>
 
     <sql id="selectTrackingVo">
-        select tracking_id, seq_no, meeting_id, meeting_title, project,
-               dept_report, director_note, lead_person, lead_dept,
-               track_dept, init_dept, status, task_date, planned_date,
-               create_by, create_time, update_by, update_time, remark
-        from mms_tracking
+        select t.tracking_id, t.dept_id, t.seq_no, t.meeting_id, t.meeting_title, t.project,
+               t.dept_report, t.director_note, t.lead_person, t.lead_dept,
+               t.track_dept, t.init_dept, t.status, t.task_date, t.planned_date,
+               t.create_by, t.create_time, t.update_by, t.update_time, t.remark
+        from mms_tracking t
+        left join sys_dept d on d.dept_id = t.dept_id
     </sql>
 
-    <!-- 实体条件查询，对应 BaseMapper.selectByCondition，支持 LIKE 过滤 -->
+    <!-- 实体条件查询，对应 BaseMapper.selectByCondition，支持 LIKE 过滤 / 数据权限 -->
     <select id="selectByCondition" parameterType="com.ruoyi.system.domain.MmsTracking" resultMap="MmsTrackingResult">
         <include refid="selectTrackingVo"/>
         <where>
-            AND del_flag = '0'
+            AND t.del_flag = '0'
             <if test="project != null and project != ''">
-                AND project like concat('%', #{project}::text, '%')
+                AND t.project like concat('%', #{project}::text, '%')
             </if>
             <if test="status != null and status != ''">
-                AND status = #{status}
+                AND t.status = #{status}
             </if>
             <if test="trackDept != null and trackDept != ''">
-                AND track_dept like concat('%', #{trackDept}::text, '%')
+                AND t.track_dept like concat('%', #{trackDept}::text, '%')
             </if>
             <if test="initDept != null and initDept != ''">
-                AND init_dept like concat('%', #{initDept}::text, '%')
+                AND t.init_dept like concat('%', #{initDept}::text, '%')
             </if>
             <if test="leadDept != null and leadDept != ''">
-                AND lead_dept like concat('%', #{leadDept}::text, '%')
+                AND t.lead_dept like concat('%', #{leadDept}::text, '%')
+            </if>
+            <!-- 数据权限（由 @DataScope AOP 注入，超级管理员为空） -->
+            <if test="params != null and params.dataScope != null and params.dataScope != ''">
+                ${params.dataScope}
             </if>
         </where>
-        order by tracking_id
+        order by t.tracking_id
     </select>
 
     <!-- ══════════════════════════════════════════════════════════════

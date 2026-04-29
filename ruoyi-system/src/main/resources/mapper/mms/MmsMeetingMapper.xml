@@ -5,6 +5,7 @@
 
     <resultMap type="com.ruoyi.system.domain.MmsMeeting" id="MmsMeetingResult">
         <result property="meetingId"   column="meeting_id"   />
+        <result property="deptId"      column="dept_id"      />
         <result property="meetingNo"   column="meeting_no"   />
         <result property="title"       column="title"        />
         <result property="campus"      column="campus"       />
@@ -41,48 +42,53 @@
     </resultMap>
 
     <sql id="selectMeetingVo">
-        select meeting_id, meeting_no, title, campus, room_id, room_number, category,
-               frequency, meeting_type, tencent_id, start_time, end_time,
-               host_user, host_name, lead_dept, description, status,
-               process_instance_id,
-               create_by, create_time, update_by, update_time, remark
-        from mms_meeting
+        select m.meeting_id, m.meeting_no, m.title, m.campus, m.room_id, m.room_number, m.category,
+               m.frequency, m.meeting_type, m.tencent_id, m.start_time, m.end_time,
+               m.host_user, m.host_name, m.lead_dept, m.description, m.status,
+               m.process_instance_id, m.dept_id,
+               m.create_by, m.create_time, m.update_by, m.update_time, m.remark
+        from mms_meeting m
+        left join sys_dept d on d.dept_id = m.dept_id
     </sql>
 
-    <!-- 实体条件查询，对应 BaseMapper.selectByCondition，支持 LIKE / 日期范围 -->
+    <!-- 实体条件查询，对应 BaseMapper.selectByCondition，支持 LIKE / 日期范围 / 数据权限 -->
     <select id="selectByCondition" parameterType="com.ruoyi.system.domain.MmsMeeting" resultMap="MmsMeetingResult">
         <include refid="selectMeetingVo"/>
         <where>
-            AND del_flag = '0'
+            AND m.del_flag = '0'
             <if test="meetingNo != null and meetingNo != ''">
-                AND meeting_no = #{meetingNo}
+                AND m.meeting_no = #{meetingNo}
             </if>
             <if test="title != null and title != ''">
-                AND title like concat('%', #{title}::text, '%')
+                AND m.title like concat('%', #{title}::text, '%')
             </if>
             <if test="campus != null and campus != ''">
-                AND campus = #{campus}
+                AND m.campus = #{campus}
             </if>
             <if test="category != null and category != ''">
-                AND category = #{category}
+                AND m.category = #{category}
             </if>
             <if test="status != null and status != ''">
-                AND status = #{status}
+                AND m.status = #{status}
             </if>
             <if test="hostUser != null and hostUser != ''">
-                AND host_user = #{hostUser}
+                AND m.host_user = #{hostUser}
             </if>
             <if test="leadDept != null and leadDept != ''">
-                AND lead_dept like concat('%', #{leadDept}::text, '%')
+                AND m.lead_dept like concat('%', #{leadDept}::text, '%')
             </if>
             <if test="beginDate != null and beginDate != ''">
-                AND start_time &gt;= #{beginDate}::timestamp
+                AND m.start_time &gt;= #{beginDate}::timestamp
             </if>
             <if test="endDate != null and endDate != ''">
-                AND start_time &lt;= (#{endDate}::date + interval '1 day')
+                AND m.start_time &lt;= (#{endDate}::date + interval '1 day')
+            </if>
+            <!-- 数据权限（由 @DataScope AOP 注入，超级管理员为空） -->
+            <if test="params != null and params.dataScope != null and params.dataScope != ''">
+                ${params.dataScope}
             </if>
         </where>
-        order by CASE status WHEN '0' THEN 0 WHEN '2' THEN 1 WHEN '1' THEN 2 ELSE 3 END, start_time desc
+        order by CASE m.status WHEN '0' THEN 0 WHEN '2' THEN 1 WHEN '1' THEN 2 ELSE 3 END, m.start_time desc
     </select>
 
     <!-- ══════════════════════════════════════════════════════════════
@@ -91,10 +97,10 @@
 
     <select id="selectMeetingsByDate" parameterType="String" resultMap="MmsMeetingResult">
         <include refid="selectMeetingVo"/>
-        where DATE(start_time) = #{date}::date
-          and del_flag = '0'
-          and status != '1'
-        order by campus, start_time
+        where DATE(m.start_time) = #{date}::date
+          and m.del_flag = '0'
+          and m.status != '1'
+        order by m.campus, m.start_time
     </select>
 
     <!-- 参会人员 -->
@@ -140,8 +146,8 @@
     </select>
 
     <!-- 事务级 advisory lock，串行化同一会议室的并发预约 -->
-    <select id="lockRoomAdvisory" resultType="void">
-        SELECT pg_advisory_xact_lock(#{roomId})
+    <select id="lockRoomAdvisory" resultType="java.lang.Integer">
+        SELECT 1 FROM (SELECT pg_advisory_xact_lock(#{roomId})) t
     </select>
 
 </mapper>

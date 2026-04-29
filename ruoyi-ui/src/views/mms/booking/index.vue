@@ -42,9 +42,17 @@
         <el-form ref="step1Form" :model="booking" label-width="90px">
           <el-form-item v-if="meetingType==='0'" label="园区" prop="campus"
             :rules="[{required:true,message:'请选择园区',trigger:'change'}]">
-            <el-select v-model="booking.campus" placeholder="请选择园区" style="width:100%">
-              <el-option v-for="c in campuses" :key="c" :label="c" :value="c" />
-            </el-select>
+            <div class="bk-campus-btns">
+              <button
+                v-for="c in campuses" :key="c"
+                type="button"
+                :class="['bk-campus-btn', booking.campus === c ? 'active' : '']"
+                @click="booking.campus = c"
+              >
+                <span class="bk-campus-icon-wrap"><i class="el-icon-location"></i></span>
+                <span class="bk-campus-name">{{ c }}</span>
+              </button>
+            </div>
           </el-form-item>
           <el-form-item label="日期" prop="date"
             :rules="[{required:true,message:'请选择日期',trigger:'change'}]">
@@ -169,8 +177,8 @@
                 <div class="bk-room-eq-dots" v-if="room.equipment">
                   <span
                     v-for="eq in splitEquip(room.equipment).slice(0,4)" :key="eq"
-                    class="bk-dot" :class="equipClass(eq)" :title="eq"
-                  ></span>
+                    class="bk-eq-icon" :class="equipClass(eq)" :title="eq"
+                  ><i :class="equipIcon(eq)"></i></span>
                   <span v-if="splitEquip(room.equipment).length > 4" class="bk-dot-more">
                     +{{ splitEquip(room.equipment).length - 4 }}
                   </span>
@@ -977,6 +985,43 @@ export default {
 .bk-mode-btn > * + * { margin-left:6px; }
 .bk-mode-btn.active { border-color:#1a56db; background:#e1eafe; color:#1a56db; font-weight:600; }
 
+/* ── 园区选择按钮 ── */
+.bk-campus-btns { display: flex; gap: 10px; }
+.bk-campus-btns { display: flex; gap: 12px; }
+.bk-campus-btn {
+  flex: 1; padding: 18px 10px 14px; border-radius: 14px;
+  border: 1.5px solid #e5e7eb; background: #fff; cursor: pointer; color: #6b7280;
+  transition: all .18s ease; display: flex; flex-direction: column; align-items: center; gap: 6px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  outline: none;
+}
+.bk-campus-icon-wrap {
+  width: 44px; height: 44px; border-radius: 50%; background: #f3f4f6;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .18s ease;
+  i { font-size: 22px; color: #9ca3af; transition: all .18s ease; }
+}
+.bk-campus-name {
+  font-size: 15px; font-weight: 600; color: #374151; letter-spacing: .5px;
+  transition: color .18s;
+}
+.bk-campus-sub {
+  font-size: 11px; color: #c0c4cc; transition: color .18s;
+}
+.bk-campus-btn:hover {
+  border-color: #93c5fd; box-shadow: 0 4px 12px rgba(37,99,235,.1);
+  .bk-campus-icon-wrap { background: #dbeafe; i { color: #2563eb; } }
+  .bk-campus-name { color: #1d4ed8; }
+  .bk-campus-sub { color: #93c5fd; }
+}
+.bk-campus-btn.active {
+  border-color: #2563eb; background: #eff6ff;
+  box-shadow: 0 4px 14px rgba(37,99,235,.18);
+  .bk-campus-icon-wrap { background: #2563eb; i { color: #fff; } }
+  .bk-campus-name { color: #1e40af; }
+  .bk-campus-sub { color: #60a5fa; }
+}
+
 /* ── 工具栏 ── */
 .bk-toolbar {
   display:flex; align-items:center; justify-content:space-between;
@@ -1118,14 +1163,16 @@ export default {
   display: flex; align-items: center; flex-wrap: wrap; margin-left: -3px; margin-top: -3px;
 }
 .bk-room-eq-dots > * { margin-left: 3px; margin-top: 3px; }
-.bk-dot {
-  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
-  &.eq-display { background: #3b82f6; }
-  &.eq-video   { background: #a855f7; }
-  &.eq-audio   { background: #f97316; }
-  &.eq-board   { background: #22c55e; }
-  &.eq-net     { background: #0ea5e9; }
-  &.eq-default { background: #9ca3af; }
+.bk-eq-icon {
+  width: 18px; height: 18px; border-radius: 4px; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  i { font-size: 12px; }
+  &.eq-display { background: #eff6ff; i { color: #3b82f6; } }
+  &.eq-video   { background: #faf5ff; i { color: #a855f7; } }
+  &.eq-audio   { background: #fff7ed; i { color: #f97316; } }
+  &.eq-board   { background: #f0fdf4; i { color: #22c55e; } }
+  &.eq-net     { background: #f0f9ff; i { color: #0ea5e9; } }
+  &.eq-default { background: #f9fafb; i { color: #9ca3af; } }
 }
 .bk-dot-more { font-size: 10px; color: #9ca3af; line-height: 1; }
 .bk-room-meta  { font-size: 11px; color: #9ca3af; display: flex; align-items: center; }

@@ -4,6 +4,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.ruoyi.common.annotation.DataScope;
+import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.system.domain.MmsTracking;
 import com.ruoyi.system.domain.MmsTrackingProgress;
 import com.ruoyi.system.mapper.MmsTrackingMapper;
@@ -28,6 +30,7 @@ public class MmsTrackingServiceImpl implements IMmsTrackingService
     }
 
     @Override
+    @DataScope(deptAlias = "d")
     public List<MmsTracking> selectTrackingList(MmsTracking tracking) {
         List<MmsTracking> list = trackingMapper.selectByCondition(tracking);
         for (MmsTracking item : list) {
@@ -38,6 +41,12 @@ public class MmsTrackingServiceImpl implements IMmsTrackingService
 
     @Override
     public int insertTracking(MmsTracking tracking) {
+        if (tracking.getDeptId() == null) {
+            try {
+                Long deptId = SecurityUtils.getLoginUser().getUser().getDeptId();
+                tracking.setDeptId(deptId);
+            } catch (Exception ignored) {}
+        }
         return trackingMapper.insert(tracking);
     }
 

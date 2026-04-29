@@ -1,6 +1,7 @@
 package com.ruoyi.system.service;
 
 import java.util.List;
+import com.ruoyi.common.annotation.DataScope;
 import com.ruoyi.system.domain.MmsTracking;
 import com.ruoyi.system.domain.MmsTrackingProgress;
 
@@ -11,6 +12,7 @@ public interface IMmsTrackingService
 {
     MmsTracking selectTrackingById(Long trackingId);
 
+    @DataScope(deptAlias = "d")
     List<MmsTracking> selectTrackingList(MmsTracking tracking);
 
     int insertTracking(MmsTracking tracking);
