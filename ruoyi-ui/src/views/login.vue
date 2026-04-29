@@ -156,76 +156,79 @@
         <h2 class="lp-form-title">欢迎登录</h2>
         <p class="lp-form-sub">{{ greeting }}，请填写您的账号信息</p>
 
-        <!-- 登录类型 Tab -->
-        <div class="lp-tabs">
-          <button class="lp-tab" :class="{ active: loginForm.loginType === '1' }" @click="switchType('1')">域账号</button>
-          <button class="lp-tab" :class="{ active: loginForm.loginType === '0' }" @click="switchType('0')">系统账号</button>
-        </div>
+        <!-- 带边框的表单卡片 -->
+        <div class="lp-form-card">
+          <!-- Tab 切换 -->
+          <div class="lp-tabs">
+            <button class="lp-tab" :class="{ active: loginForm.loginType === '1' }" @click="switchType('1')">域账号</button>
+            <button class="lp-tab" :class="{ active: loginForm.loginType === '0' }" @click="switchType('0')">系统账号</button>
+          </div>
 
-        <!-- 表单容器，固定高度避免切换跳动 -->
-        <div class="lp-form-wrap">
-          <!-- 域账号表单 -->
-          <el-form v-show="loginForm.loginType === '1'" ref="ldapForm" :model="loginForm" :rules="ldapRules" class="lp-form">
-            <el-form-item prop="username">
-              <div class="lp-field">
-                <label>账号</label>
-                <el-input v-model="loginForm.username" placeholder="请输入域账号"
-                  auto-complete="off" size="medium" />
-              </div>
-            </el-form-item>
-            <el-form-item prop="password">
-              <div class="lp-field">
-                <label>密码</label>
-                <el-input v-model="loginForm.password" type="password" placeholder="请输入密码"
-                  auto-complete="off" size="medium" show-password
-                  @keyup.enter.native="handleLogin" />
-              </div>
-            </el-form-item>
-            <!-- 占位：与系统账号表单等高 -->
-            <div class="lp-placeholder"></div>
-            <el-button :loading="loading" type="primary" class="lp-btn" @click.native.prevent="handleLogin">
-              <span v-if="!loading">登 录</span><span v-else>登录中...</span>
-            </el-button>
-          </el-form>
-
-          <!-- 系统账号表单 -->
-          <el-form v-show="loginForm.loginType === '0'" ref="sysForm" :model="loginForm" :rules="sysRules" class="lp-form">
-            <el-form-item prop="username">
-              <div class="lp-field">
-                <label>账号</label>
-                <el-input v-model="loginForm.username" placeholder="请输入账号"
-                  auto-complete="off" size="medium" />
-              </div>
-            </el-form-item>
-            <el-form-item prop="password">
-              <div class="lp-field">
-                <label>密码</label>
-                <el-input v-model="loginForm.password" type="password" placeholder="请输入密码"
-                  auto-complete="off" size="medium" show-password
-                  @keyup.enter.native="handleLogin" />
-              </div>
-            </el-form-item>
-            <el-form-item prop="code">
-              <div class="lp-field">
-                <label>验证码</label>
-                <div class="lp-code-row">
-                  <el-input v-model="loginForm.code" placeholder="请输入验证码"
-                    auto-complete="off" size="medium"
+          <!-- 两套表单绝对叠放，opacity 切换，容器固定高度无跳动 -->
+          <div class="lp-form-wrap">
+            <!-- 域账号表单 -->
+            <el-form ref="ldapForm" :model="loginForm" :rules="ldapRules"
+              class="lp-form" :class="{ 'lp-form-visible': loginForm.loginType === '1' }">
+              <el-form-item prop="username">
+                <div class="lp-field">
+                  <label>账号</label>
+                  <el-input v-model="loginForm.username" placeholder="请输入域账号"
+                    auto-complete="off" size="medium" />
+                </div>
+              </el-form-item>
+              <el-form-item prop="password">
+                <div class="lp-field">
+                  <label>密码</label>
+                  <el-input v-model="loginForm.password" type="password" placeholder="请输入密码"
+                    auto-complete="off" size="medium" show-password
                     @keyup.enter.native="handleLogin" />
-                  <div class="lp-captcha" @click="getCode" title="点击刷新">
-                    <img :src="codeUrl" alt="验证码"/>
-                    <div class="lp-captcha-mask"><i class="el-icon-refresh"></i></div>
+                </div>
+              </el-form-item>
+              <el-button :loading="loading" type="primary" class="lp-btn" @click.native.prevent="handleLogin">
+                <span v-if="!loading">登 录</span><span v-else>登录中...</span>
+              </el-button>
+            </el-form>
+
+            <!-- 系统账号表单 -->
+            <el-form ref="sysForm" :model="loginForm" :rules="sysRules"
+              class="lp-form" :class="{ 'lp-form-visible': loginForm.loginType === '0' }">
+              <el-form-item prop="username">
+                <div class="lp-field">
+                  <label>账号</label>
+                  <el-input v-model="loginForm.username" placeholder="请输入账号"
+                    auto-complete="off" size="medium" />
+                </div>
+              </el-form-item>
+              <el-form-item prop="password">
+                <div class="lp-field">
+                  <label>密码</label>
+                  <el-input v-model="loginForm.password" type="password" placeholder="请输入密码"
+                    auto-complete="off" size="medium" show-password
+                    @keyup.enter.native="handleLogin" />
+                </div>
+              </el-form-item>
+              <el-form-item prop="code">
+                <div class="lp-field">
+                  <label>验证码</label>
+                  <div class="lp-code-row">
+                    <el-input v-model="loginForm.code" placeholder="请输入验证码"
+                      auto-complete="off" size="medium"
+                      @keyup.enter.native="handleLogin" />
+                    <div class="lp-captcha" @click="getCode" title="点击刷新">
+                      <img :src="codeUrl" alt="验证码"/>
+                      <div class="lp-captcha-mask"><i class="el-icon-refresh"></i></div>
+                    </div>
                   </div>
                 </div>
+              </el-form-item>
+              <div class="lp-remember">
+                <el-checkbox v-model="loginForm.rememberMe">记住密码</el-checkbox>
               </div>
-            </el-form-item>
-            <div class="lp-remember">
-              <el-checkbox v-model="loginForm.rememberMe">记住密码</el-checkbox>
-            </div>
-            <el-button :loading="loading" type="primary" class="lp-btn" @click.native.prevent="handleLogin">
-              <span v-if="!loading">登 录</span><span v-else>登录中...</span>
-            </el-button>
-          </el-form>
+              <el-button :loading="loading" type="primary" class="lp-btn" @click.native.prevent="handleLogin">
+                <span v-if="!loading">登 录</span><span v-else>登录中...</span>
+              </el-button>
+            </el-form>
+          </div>
         </div>
 
         <div class="lp-footer">
@@ -525,56 +528,72 @@ export default {
 .lp-form-sub {
   font-size: 13.5px;
   color: #94a3b8;
-  margin: 0 0 28px;
+  margin: 0 0 20px;
+}
+
+/* 表单外层边框卡片 */
+.lp-form-card {
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
 }
 
 /* Tab 切换 */
 .lp-tabs {
   display: flex;
-  gap: 0;
-  margin-bottom: 24px;
-  border-bottom: 2px solid #f1f5f9;
+  border-bottom: 1.5px solid #e2e8f0;
+  background: #f8fafc;
 }
 .lp-tab {
   flex: 1;
-  height: 38px;
+  height: 42px;
   border: none;
   background: transparent;
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 500;
   font-family: inherit;
   cursor: pointer;
   color: #94a3b8;
   position: relative;
-  transition: color 0.18s;
+  transition: color 0.18s, background 0.18s;
+  &:first-child { border-right: 1.5px solid #e2e8f0; }
   &::after {
     content: '';
     position: absolute;
-    bottom: -2px; left: 50%; right: 50%;
+    bottom: -1.5px; left: 50%; right: 50%;
     height: 2px;
     background: #2563eb;
-    border-radius: 1px;
     transition: left 0.22s ease, right 0.22s ease;
   }
   &.active {
     color: #0f172a;
-    &::after { left: 16%; right: 16%; }
+    background: #ffffff;
+    &::after { left: 0; right: 0; }
   }
-  &:hover:not(.active) { color: #475569; }
+  &:hover:not(.active) { color: #475569; background: #f1f5f9; }
 }
 
-/* 表单容器：两个表单叠放，用 v-show 切换，高度由系统账号表单撑开 */
+/* 表单容器：固定高度 = 系统账号表单高度，两套表单绝对叠放 */
 .lp-form-wrap {
   position: relative;
+  /* username+password+captcha+remember+button 总高 */
+  height: 330px;
+  padding: 24px;
 }
 
-/* 域账号表单中的占位块，补齐与系统账号表单的高度差（验证码行 + 记住密码行） */
-.lp-placeholder {
-  height: 90px;
-}
-
-/* 表单 */
+/* 表单：绝对叠放，opacity + pointer-events 切换 */
 .lp-form {
+  position: absolute;
+  inset: 24px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s ease;
+  &.lp-form-visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
   .el-form-item { margin-bottom: 0; }
   .el-form-item__error { font-size: 11.5px; padding-top: 3px; color: #f43f5e; }
   .el-input__inner {
