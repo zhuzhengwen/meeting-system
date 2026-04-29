@@ -175,8 +175,92 @@ public class HrDeptTreeParser {
     /** 递归打印树结构，方便调试 */
     public static void print(List<DeptNode> nodes, String indent) {
         for (DeptNode node : nodes) {
-            System.out.println(indent + "├─ " + node.name + " (depth=" + node.depth + ")");
+            System.out.println(indent + "├─ " + node.name + " (depth=" + node.depth + ", path=" + node.fullPath() + ")");
             print(node.children, indent + "│  ");
+        }
+    }
+
+    // ── 测试入口 ──────────────────────────────────────────────────────────────
+
+    /**
+     * 直接运行此 main 方法即可验证解析逻辑，无需 Excel 文件。
+     * 模拟数据覆盖以下场景：
+     *  - 正常6层链
+     *  - 中途截断（只到第4层）
+     *  - 同名同父去重
+     *  - 多根节点
+     */
+    public static void main(String[] args) throws Exception {
+
+        // ── 场景1：用路径链直接构建（不依赖 Excel） ─────────────────────────
+        System.out.println("════════ 场景1：路径链解析 ════════");
+        List<List<String>> paths = Arrays.asList(
+            // 正常6层
+            Arrays.asList("总公司", "研发中心", "后端部", "Java组"),
+            Arrays.asList("总公司", "研发中心", "后端部", "Go组"),
+            Arrays.asList("总公司", "研发中心", "前端部"),
+            // 只到第3层
+            Arrays.asList("总公司", "研发中心", "测试部"),
+            // 同名同父（应去重，不重复创建"行政部"）
+            Arrays.asList("总公司", "行政部", "人事组"),
+            Arrays.asList("总公司", "行政部", "财务组"),
+            // 第二个根节点
+            Arrays.asList("分公司", "华南区", "广州办事处"),
+            Arrays.asList("分公司", "华南区", "深圳办事处"),
+            Arrays.asList("分公司", "华北区")
+        );
+
+        List<DeptNode> roots = buildTree(paths);
+        print(roots, "");
+
+        System.out.println("\n──── 展平（BFS）第一棵树下所有节点 ────");
+        roots.get(0).flatten().forEach(n ->
+            System.out.printf("  depth=%-2d  %-20s  %s%n", n.depth, n.name, n.fullPath())
+        );
+
+        // ── 场景2：模拟 Excel 行数据（不实际读文件） ──────────────────────
+        System.out.println("\n════════ 场景2：模拟 Excel 行解析 ════════");
+        // 每行对应 [Dept1, Dept2, Dept3, Dept4, Dept5, Dept6]，空串表示该列为空
+        String[][] excelRows = {
+            {"总公司", "研发中心", "后端部", "Java组", "",       ""},   // 只到第4层
+            {"总公司", "研发中心", "后端部", "Java组", "基础架构", ""},  // 到第5层
+            {"总公司", "研发中心", "后端部", "Go组",   "",       ""},
+            {"总公司", "研发中心", "前端部", "",       "",       ""},   // 只到第3层
+            {"总公司", "行政部",   "人事组", "",       "",       ""},
+            {"总公司", "行政部",   "财务组", "",       "",       ""},
+            {"总公司", "行政部",   "财务组", "",       "",       ""},   // 重复行，应去重
+        };
+
+        List<List<String>> excelPaths = new ArrayList<>();
+        for (String[] row : excelRows) {
+            List<String> chain = new ArrayList<>();
+            for (String val : row) {
+                if (val == null || val.trim().isEmpty()) break;
+                chain.add(val.trim());
+            }
+            if (!chain.isEmpty()) excelPaths.add(chain);
+        }
+
+        List<DeptNode> roots2 = buildTree(excelPaths);
+        print(roots2, "");
+
+        System.out.println("\n──── 验证去重：行政部子节点数（应为2，不是3） ────");
+        roots2.get(0).flatten().stream()
+            .filter(n -> "行政部".equals(n.name))
+            .findFirst()
+            .ifPresent(n -> System.out.println("  行政部 children=" + n.children.size() + " → " + n.children.stream().map(c -> c.name).toList()));
+
+        // ── 场景3：读取真实 Excel 文件（取消注释并填写路径后运行） ─────────
+        System.out.println("\n════════ 场景3：读取真实 Excel（默认跳过） ════════");
+        String excelPath = ""; // ← 填写你的 Excel 绝对路径，如 "D:/staff.xlsx"
+        if (!excelPath.isEmpty()) {
+            try (java.io.FileInputStream fis = new java.io.FileInputStream(excelPath)) {
+                List<DeptNode> roots3 = parseFromExcel(fis, 0);
+                System.out.println("解析到根节点数：" + roots3.size());
+                print(roots3, "");
+            }
+        } else {
+            System.out.println("  （跳过，excelPath 未配置）");
         }
     }
 }
