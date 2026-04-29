@@ -597,23 +597,23 @@ export default {
   .el-form-item { margin-bottom: 0; }
   .el-form-item__error { font-size: 11.5px; padding-top: 3px; color: #f43f5e; }
   .el-input__inner {
-    height: 44px !important;
-    border-radius: 10px !important;
-    border: 1.5px solid #c8d0dc !important;
-    background: #ffffff !important;
+    height: 42px !important;
+    border-radius: 0 !important;
+    border: none !important;
+    border-bottom: 1.5px solid #dde3ef !important;
+    background: transparent !important;
     color: #0f172a !important;
     font-size: 14px !important;
-    padding: 0 14px !important;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
-    transition: all 0.18s !important;
+    padding: 0 2px !important;
+    box-shadow: none !important;
+    transition: border-color 0.18s !important;
     &:focus {
-      border-color: #2563eb !important;
-      background: #ffffff !important;
-      box-shadow: 0 0 0 3px rgba(37,99,235,0.12) !important;
+      border-bottom-color: #2563eb !important;
+      box-shadow: none !important;
     }
     &::placeholder { color: #b0bac6 !important; font-size: 13.5px !important; }
   }
-  .el-input__suffix { line-height: 44px; }
+  .el-input__suffix { line-height: 42px; }
   .el-input__prefix { display: none; }
 }
 .lp-field {
@@ -634,11 +634,10 @@ export default {
 .lp-captcha {
   position: relative;
   width: 110px;
-  height: 44px;
+  height: 42px;
   flex-shrink: 0;
-  border-radius: 10px;
   overflow: hidden;
-  border: 1.5px solid #c8d0dc;
+  border-bottom: 1.5px solid #dde3ef;
   cursor: pointer;
   transition: border-color 0.18s;
   &:hover { border-color: #2563eb; .lp-captcha-mask { opacity: 1; } }
