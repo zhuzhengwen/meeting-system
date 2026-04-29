@@ -1,242 +1,137 @@
 <template>
   <div class="lp-root">
 
-    <!-- ══ 左侧品牌区 ══ -->
-    <div class="lp-brand">
-      <div class="lp-brand-content">
-        <!-- Logo -->
-        <div class="lp-logo">
-          <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="2" y="7" width="28" height="21" rx="4" stroke="white" stroke-width="1.8"/>
-            <path d="M2 13h28" stroke="white" stroke-width="1.8"/>
-            <circle cx="10" cy="5" r="2" fill="white"/>
-            <circle cx="22" cy="5" r="2" fill="white"/>
-            <rect x="9"  y="18" width="5" height="5" rx="1.5" fill="rgba(255,255,255,0.9)"/>
-            <rect x="18" y="18" width="5" height="5" rx="1.5" fill="rgba(255,255,255,0.5)"/>
-          </svg>
-          <span>会议管理系统</span>
-        </div>
-
-        <!-- 主标题 -->
-        <div class="lp-headline">
-          <h1>高效会议<br/>从这里开始</h1>
-          <p>统一管理会议室预约、日程协同与消息通知，让每一次会议都有迹可循。</p>
-        </div>
-
-        <!-- 核心插图 -->
-        <div class="lp-illus">
-          <svg viewBox="0 0 420 280" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- 网格背景 -->
-            <defs>
-              <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse">
-                <path d="M 28 0 L 0 0 0 28" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
-              </pattern>
-              <linearGradient id="cardGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="rgba(255,255,255,0.14)"/>
-                <stop offset="100%" stop-color="rgba(255,255,255,0.05)"/>
-              </linearGradient>
-              <linearGradient id="barBlue" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stop-color="#60a5fa"/>
-                <stop offset="100%" stop-color="#93c5fd"/>
-              </linearGradient>
-              <linearGradient id="barGreen" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stop-color="#34d399"/>
-                <stop offset="100%" stop-color="#6ee7b7"/>
-              </linearGradient>
-              <linearGradient id="barPurple" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stop-color="#a78bfa"/>
-                <stop offset="100%" stop-color="#c4b5fd"/>
-              </linearGradient>
-              <filter id="cardShadow">
-                <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="rgba(0,0,0,0.3)"/>
-              </filter>
-            </defs>
-            <rect width="420" height="280" fill="url(#grid)"/>
-
-            <!-- 主卡片 -->
-            <rect x="60" y="30" width="210" height="200" rx="14" fill="url(#cardGrad)" stroke="rgba(255,255,255,0.15)" stroke-width="1" filter="url(#cardShadow)"/>
-            <!-- 卡片顶色条 -->
-            <rect x="60" y="30" width="210" height="4" rx="2" fill="url(#barBlue)"/>
-
-            <!-- 标题行 -->
-            <rect x="80" y="52" width="120" height="8" rx="4" fill="rgba(255,255,255,0.75)"/>
-            <rect x="80" y="65" width="80"  height="5" rx="2.5" fill="rgba(255,255,255,0.3)"/>
-
-            <!-- 分隔线 -->
-            <line x1="80" y1="82" x2="250" y2="82" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
-
-            <!-- 会议室使用率条形图 -->
-            <text x="80" y="100" font-size="9" fill="rgba(255,255,255,0.45)" font-family="sans-serif">会议室使用率</text>
-
-            <rect x="80" y="108" width="150" height="7" rx="3.5" fill="rgba(255,255,255,0.07)"/>
-            <rect x="80" y="108" width="105" height="7" rx="3.5" fill="url(#barBlue)"/>
-            <text x="238" y="115" font-size="8" fill="rgba(255,255,255,0.5)" font-family="sans-serif">70%</text>
-
-            <rect x="80" y="121" width="150" height="7" rx="3.5" fill="rgba(255,255,255,0.07)"/>
-            <rect x="80" y="121" width="135" height="7" rx="3.5" fill="url(#barGreen)"/>
-            <text x="238" y="128" font-size="8" fill="rgba(255,255,255,0.5)" font-family="sans-serif">90%</text>
-
-            <rect x="80" y="134" width="150" height="7" rx="3.5" fill="rgba(255,255,255,0.07)"/>
-            <rect x="80" y="134" width="75"  height="7" rx="3.5" fill="url(#barPurple)"/>
-            <text x="238" y="141" font-size="8" fill="rgba(255,255,255,0.5)" font-family="sans-serif">50%</text>
-
-            <!-- 分隔线 -->
-            <line x1="80" y1="153" x2="250" y2="153" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
-
-            <!-- 今日会议 -->
-            <text x="80" y="170" font-size="9" fill="rgba(255,255,255,0.45)" font-family="sans-serif">今日待参加</text>
-            <circle cx="88"  cy="187" r="7" fill="rgba(96,165,250,0.3)"  stroke="rgba(96,165,250,0.6)"  stroke-width="1.2"/>
-            <circle cx="104" cy="187" r="7" fill="rgba(167,139,250,0.3)" stroke="rgba(167,139,250,0.6)" stroke-width="1.2"/>
-            <circle cx="120" cy="187" r="7" fill="rgba(52,211,153,0.3)"  stroke="rgba(52,211,153,0.6)"  stroke-width="1.2"/>
-            <circle cx="136" cy="187" r="7" fill="rgba(251,191,36,0.3)"  stroke="rgba(251,191,36,0.6)"  stroke-width="1.2"/>
-            <rect x="152" y="180" width="68" height="14" rx="7" fill="rgba(52,211,153,0.2)" stroke="rgba(52,211,153,0.4)" stroke-width="1"/>
-            <text x="186" y="190" text-anchor="middle" font-size="8" fill="rgba(52,211,153,0.9)" font-family="sans-serif">3 场待开始</text>
-
-            <!-- 浮动小卡片 1：已确认 -->
-            <rect x="252" y="46" width="116" height="48" rx="10" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
-            <circle cx="270" cy="62" r="10" fill="rgba(52,211,153,0.3)" stroke="rgba(52,211,153,0.5)" stroke-width="1"/>
-            <path d="M265 62 L268.5 65.5 L276 58" stroke="rgba(52,211,153,0.9)" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-            <rect x="286" y="56" width="70" height="6" rx="3" fill="rgba(255,255,255,0.6)"/>
-            <rect x="286" y="66" width="50" height="4" rx="2" fill="rgba(255,255,255,0.25)"/>
-            <rect x="260" y="80" width="98" height="4" rx="2" fill="rgba(255,255,255,0.1)"/>
-
-            <!-- 浮动小卡片 2：提醒 -->
-            <rect x="252" y="112" width="116" height="48" rx="10" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
-            <circle cx="270" cy="128" r="10" fill="rgba(251,191,36,0.3)" stroke="rgba(251,191,36,0.5)" stroke-width="1"/>
-            <text x="270" y="132" text-anchor="middle" font-size="11" fill="rgba(251,191,36,0.9)" font-family="sans-serif">!</text>
-            <rect x="286" y="122" width="60" height="6" rx="3" fill="rgba(255,255,255,0.6)"/>
-            <rect x="286" y="132" width="44" height="4" rx="2" fill="rgba(255,255,255,0.25)"/>
-            <rect x="260" y="146" width="98" height="4" rx="2" fill="rgba(255,255,255,0.1)"/>
-
-            <!-- 浮动小卡片 3：统计 -->
-            <rect x="252" y="178" width="116" height="72" rx="10" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
-            <text x="270" y="200" font-size="9" fill="rgba(255,255,255,0.4)" font-family="sans-serif">本月预约</text>
-            <text x="270" y="218" font-size="22" font-weight="bold" fill="rgba(255,255,255,0.85)" font-family="sans-serif">128</text>
-            <rect x="270" y="228" width="32" height="14" rx="7" fill="rgba(52,211,153,0.2)"/>
-            <text x="286" y="238" text-anchor="middle" font-size="8" fill="rgba(52,211,153,0.9)" font-family="sans-serif">↑12%</text>
-
-            <!-- 装饰光点 -->
-            <circle cx="40"  cy="40"  r="4" fill="rgba(96,165,250,0.4)"/>
-            <circle cx="400" cy="260" r="3" fill="rgba(167,139,250,0.4)"/>
-            <circle cx="35"  cy="240" r="2.5" fill="rgba(52,211,153,0.35)"/>
-            <circle cx="395" cy="40"  r="2"   fill="rgba(251,191,36,0.4)"/>
+    <!-- ══ 左侧内容区 ══ -->
+    <div class="lp-left">
+      <!-- 顶部 Logo -->
+      <div class="lp-logo">
+        <div class="lp-logo-icon">
+          <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="3" y="6" width="22" height="17" rx="3" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M3 11h22" stroke="currentColor" stroke-width="1.8"/>
+            <circle cx="8.5" cy="4" r="1.5" fill="currentColor"/>
+            <circle cx="19.5" cy="4" r="1.5" fill="currentColor"/>
+            <rect x="8" y="15" width="4" height="4" rx="1" fill="currentColor" opacity="0.6"/>
+            <rect x="14" y="15" width="4" height="4" rx="1" fill="currentColor"/>
           </svg>
         </div>
+        <span class="lp-logo-text">会议管理系统</span>
+      </div>
 
-        <!-- 底部统计 -->
-        <div class="lp-stats">
-          <div class="lp-stat">
-            <span class="lp-stat-n">128</span>
-            <span class="lp-stat-l">本月预约</span>
-          </div>
-          <div class="lp-stat-div"></div>
-          <div class="lp-stat">
-            <span class="lp-stat-n">6</span>
-            <span class="lp-stat-l">会议室</span>
-          </div>
-          <div class="lp-stat-div"></div>
-          <div class="lp-stat">
-            <span class="lp-stat-n">98%</span>
-            <span class="lp-stat-l">准时率</span>
-          </div>
+      <!-- 大标题 -->
+      <h1 class="lp-hero-title">会议管理<br/>中心</h1>
+
+      <!-- 装饰点阵 -->
+      <div class="lp-dots">
+        <span v-for="i in 25" :key="i" class="lp-dot"></span>
+      </div>
+
+      <!-- 公告列表 -->
+      <div class="lp-section">
+        <div class="lp-section-title">
+          <i class="el-icon-bell"></i> 近期会议安排
         </div>
+        <ul class="lp-list">
+          <li><span class="lp-list-tag tag-blue">研发部</span><span class="lp-list-text">2026年Q2产品规划会议</span><span class="lp-list-date">今天</span></li>
+          <li><span class="lp-list-tag tag-purple">管理层</span><span class="lp-list-text">月度经营分析会</span><span class="lp-list-date">明天</span></li>
+          <li><span class="lp-list-tag tag-green">全员</span><span class="lp-list-text">2026年上半年总结大会</span><span class="lp-list-date">05-06</span></li>
+          <li><span class="lp-list-tag tag-blue">技术部</span><span class="lp-list-text">系统架构评审会</span><span class="lp-list-date">05-08</span></li>
+          <li><span class="lp-list-tag tag-orange">运营部</span><span class="lp-list-text">用户增长策略讨论</span><span class="lp-list-date">05-10</span></li>
+        </ul>
+      </div>
+
+      <div class="lp-section">
+        <div class="lp-section-title">
+          <i class="el-icon-office-building"></i> 会议室状态
+        </div>
+        <ul class="lp-list">
+          <li><span class="lp-list-tag tag-green">空闲</span><span class="lp-list-text">第一会议室（10人）</span><span class="lp-list-date">可预约</span></li>
+          <li><span class="lp-list-tag tag-red">使用中</span><span class="lp-list-text">第二会议室（20人）</span><span class="lp-list-date">至15:00</span></li>
+          <li><span class="lp-list-tag tag-green">空闲</span><span class="lp-list-text">小型洽谈室（4人）</span><span class="lp-list-date">可预约</span></li>
+        </ul>
       </div>
     </div>
 
-    <!-- ══ 右侧登录区 ══ -->
-    <div class="lp-panel">
-      <div class="lp-panel-inner">
+    <!-- ══ 右侧蓝色背景区 ══ -->
+    <div class="lp-right">
+      <!-- 浮动图标气泡 -->
+      <div class="lp-bubble lp-bubble1">
+        <i class="el-icon-date"></i>
+      </div>
+      <div class="lp-bubble lp-bubble2">
+        <i class="el-icon-user"></i>
+      </div>
+      <div class="lp-bubble lp-bubble3">
+        <i class="el-icon-bell"></i>
+      </div>
+      <div class="lp-bubble lp-bubble4">
+        <i class="el-icon-video-camera"></i>
+      </div>
+      <div class="lp-bubble lp-bubble5">
+        <i class="el-icon-office-building"></i>
+      </div>
+    </div>
 
-        <!-- 时钟 -->
-        <div class="lp-clock">
-          <div class="lp-clock-time">{{ currentTime }}</div>
-          <div class="lp-clock-date">{{ currentDate }}</div>
-        </div>
+    <!-- ══ 浮动登录卡片 ══ -->
+    <div class="lp-card">
+      <h2 class="lp-card-title">账号登录</h2>
 
-        <h2 class="lp-form-title">欢迎登录</h2>
-        <p class="lp-form-sub">{{ greeting }}，请填写您的账号信息</p>
-
-        <!-- 带边框的表单卡片 -->
-        <div class="lp-form-card">
-          <!-- Tab 切换 -->
-          <div class="lp-tabs">
-            <button class="lp-tab" :class="{ active: loginForm.loginType === '1' }" @click="switchType('1')">域账号</button>
-            <button class="lp-tab" :class="{ active: loginForm.loginType === '0' }" @click="switchType('0')">系统账号</button>
-          </div>
-
-          <!-- 两套表单绝对叠放，opacity 切换，容器固定高度无跳动 -->
-          <div class="lp-form-wrap">
-            <!-- 域账号表单 -->
-            <el-form ref="ldapForm" :model="loginForm" :rules="ldapRules"
-              class="lp-form" :class="{ 'lp-form-visible': loginForm.loginType === '1' }">
-              <el-form-item prop="username">
-                <div class="lp-field">
-                  <label>账号</label>
-                  <el-input v-model="loginForm.username" placeholder="请输入域账号"
-                    auto-complete="off" size="medium" />
-                </div>
-              </el-form-item>
-              <el-form-item prop="password">
-                <div class="lp-field">
-                  <label>密码</label>
-                  <el-input v-model="loginForm.password" type="password" placeholder="请输入密码"
-                    auto-complete="off" size="medium" show-password
-                    @keyup.enter.native="handleLogin" />
-                </div>
-              </el-form-item>
-              <el-button :loading="loading" type="primary" class="lp-btn" @click.native.prevent="handleLogin">
-                <span v-if="!loading">登 录</span><span v-else>登录中...</span>
-              </el-button>
-            </el-form>
-
-            <!-- 系统账号表单 -->
-            <el-form ref="sysForm" :model="loginForm" :rules="sysRules"
-              class="lp-form" :class="{ 'lp-form-visible': loginForm.loginType === '0' }">
-              <el-form-item prop="username">
-                <div class="lp-field">
-                  <label>账号</label>
-                  <el-input v-model="loginForm.username" placeholder="请输入账号"
-                    auto-complete="off" size="medium" />
-                </div>
-              </el-form-item>
-              <el-form-item prop="password">
-                <div class="lp-field">
-                  <label>密码</label>
-                  <el-input v-model="loginForm.password" type="password" placeholder="请输入密码"
-                    auto-complete="off" size="medium" show-password
-                    @keyup.enter.native="handleLogin" />
-                </div>
-              </el-form-item>
-              <el-form-item prop="code">
-                <div class="lp-field">
-                  <label>验证码</label>
-                  <div class="lp-code-row">
-                    <el-input v-model="loginForm.code" placeholder="请输入验证码"
-                      auto-complete="off" size="medium"
-                      @keyup.enter.native="handleLogin" />
-                    <div class="lp-captcha" @click="getCode" title="点击刷新">
-                      <img :src="codeUrl" alt="验证码"/>
-                      <div class="lp-captcha-mask"><i class="el-icon-refresh"></i></div>
-                    </div>
-                  </div>
-                </div>
-              </el-form-item>
-              <div class="lp-remember">
-                <el-checkbox v-model="loginForm.rememberMe">记住密码</el-checkbox>
-              </div>
-              <el-button :loading="loading" type="primary" class="lp-btn" @click.native.prevent="handleLogin">
-                <span v-if="!loading">登 录</span><span v-else>登录中...</span>
-              </el-button>
-            </el-form>
-          </div>
-        </div>
-
-        <div class="lp-footer">
-          <i class="el-icon-lock"></i> 数据加密传输，安全访问保障
-        </div>
+      <!-- 类型切换 -->
+      <div class="lp-type-switch">
+        <button class="lp-type-btn" :class="{ active: loginForm.loginType === '1' }" @click="switchType('1')">域账号</button>
+        <button class="lp-type-btn" :class="{ active: loginForm.loginType === '0' }" @click="switchType('0')">系统账号</button>
       </div>
 
-      <div class="lp-copy">© 2024 会议管理系统 · All Rights Reserved</div>
+      <el-form ref="loginForm" :model="loginForm" :rules="currentRules" class="lp-form">
+        <el-form-item prop="username">
+          <div class="lp-field-wrap">
+            <label class="lp-label">* 账号</label>
+            <el-input v-model="loginForm.username" placeholder="请输入账号" auto-complete="off"
+              prefix-icon="el-icon-user" size="medium" />
+          </div>
+        </el-form-item>
+
+        <el-form-item prop="password">
+          <div class="lp-field-wrap">
+            <label class="lp-label">* 密码</label>
+            <el-input v-model="loginForm.password" type="password" placeholder="请输入密码"
+              auto-complete="off" prefix-icon="el-icon-lock" size="medium" show-password
+              @keyup.enter.native="handleLogin" />
+          </div>
+        </el-form-item>
+
+        <template v-if="loginForm.loginType === '0'">
+          <el-form-item prop="code">
+            <div class="lp-field-wrap">
+              <label class="lp-label">* 验证码</label>
+              <div class="lp-code-row">
+                <el-input v-model="loginForm.code" placeholder="请输入验证码"
+                  auto-complete="off" prefix-icon="el-icon-key" size="medium"
+                  @keyup.enter.native="handleLogin" />
+                <div class="lp-captcha" @click="getCode" title="点击刷新">
+                  <img :src="codeUrl" alt="验证码" />
+                  <div class="lp-captcha-mask"><i class="el-icon-refresh"></i></div>
+                </div>
+              </div>
+            </div>
+          </el-form-item>
+          <div class="lp-remember">
+            <el-checkbox v-model="loginForm.rememberMe">记住密码</el-checkbox>
+          </div>
+        </template>
+
+        <el-button :loading="loading" type="primary" class="lp-submit" @click.native.prevent="handleLogin">
+          <span v-if="!loading">登 录</span>
+          <span v-else>登录中...</span>
+        </el-button>
+      </el-form>
+
+      <p class="lp-helptext">如忘记密码，请联系系统管理员</p>
+
+      <div class="lp-clock-bar">
+        <span>{{ currentDate }}</span>
+        <span class="lp-clock-time">{{ currentTime }}</span>
+      </div>
     </div>
 
   </div>
@@ -253,12 +148,16 @@ export default {
     return {
       codeUrl: "",
       loginForm: {
-        username: "", password: "", rememberMe: false,
-        code: "", uuid: "", loginType: "1"
+        username: "",
+        password: "",
+        rememberMe: false,
+        code: "",
+        uuid: "",
+        loginType: "1"
       },
       sysRules: {
-        username: [{ required: true, trigger: "blur",   message: "请输入账号" }],
-        password: [{ required: true, trigger: "blur",   message: "请输入密码" }],
+        username: [{ required: true, trigger: "blur", message: "请输入账号" }],
+        password: [{ required: true, trigger: "blur", message: "请输入密码" }],
         code:     [{ required: true, trigger: "change", message: "请输入验证码" }]
       },
       ldapRules: {
@@ -267,61 +166,72 @@ export default {
       },
       loading: false,
       redirect: undefined,
-      currentTime: "", currentDate: "", clockTimer: null
+      currentTime: "",
+      currentDate: "",
+      clockTimer: null
     };
   },
   computed: {
-    currentRules() { return this.loginForm.loginType === "1" ? this.ldapRules : this.sysRules; },
-    greeting() {
-      const h = new Date().getHours();
-      if (h < 6)  return "夜深了，注意休息";
-      if (h < 11) return "早上好";
-      if (h < 13) return "中午好";
-      if (h < 18) return "下午好";
-      return "晚上好";
+    currentRules() {
+      return this.loginForm.loginType === "1" ? this.ldapRules : this.sysRules;
     }
   },
   watch: {
-    $route: { handler(r) { this.redirect = r.query && r.query.redirect; }, immediate: true }
+    $route: {
+      handler(route) { this.redirect = route.query && route.query.redirect; },
+      immediate: true
+    }
   },
   created() {
-    this.getCode(); this.getCookie();
-    this.tickClock(); this.clockTimer = setInterval(this.tickClock, 1000);
+    this.getCode();
+    this.getCookie();
+    this.tickClock();
+    this.clockTimer = setInterval(this.tickClock, 1000);
   },
-  beforeDestroy() { clearInterval(this.clockTimer); },
+  beforeDestroy() {
+    clearInterval(this.clockTimer);
+  },
   methods: {
     tickClock() {
-      const now = new Date(), p = n => String(n).padStart(2, '0');
+      const now  = new Date();
+      const p    = n => String(n).padStart(2, '0');
       const days = ['日','一','二','三','四','五','六'];
-      this.currentTime = `${p(now.getHours())}:${p(now.getMinutes())}:${p(now.getSeconds())}`;
-      this.currentDate = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日  周${days[now.getDay()]}`;
+      this.currentTime = `${p(now.getHours())}:${p(now.getMinutes())}`;
+      this.currentDate = `${now.getFullYear()}-${p(now.getMonth()+1)}-${p(now.getDate())} 周${days[now.getDay()]}`;
     },
-    switchType(t) {
-      this.loginForm.loginType = t;
-      this.$nextTick(() => {
-        this.$refs.ldapForm && this.$refs.ldapForm.clearValidate();
-        this.$refs.sysForm  && this.$refs.sysForm.clearValidate();
-      });
+    switchType(type) {
+      this.loginForm.loginType = type;
+      this.$nextTick(() => this.$refs.loginForm.clearValidate());
     },
     getCode() {
-      getCodeImg().then(res => { this.codeUrl = "data:image/gif;base64," + res.img; this.loginForm.uuid = res.uuid; });
+      getCodeImg().then(res => {
+        this.codeUrl = "data:image/gif;base64," + res.img;
+        this.loginForm.uuid = res.uuid;
+      });
     },
     getCookie() {
-      const u = Cookies.get("username"), pw = Cookies.get("password"), rm = Cookies.get("rememberMe");
-      if (u) { this.loginForm.username = u; this.loginForm.password = pw ? decrypt(pw) : ""; this.loginForm.rememberMe = rm === "true"; }
+      const username   = Cookies.get("username");
+      const password   = Cookies.get("password");
+      const rememberMe = Cookies.get("rememberMe");
+      if (username) {
+        this.loginForm.username   = username;
+        this.loginForm.password   = password ? decrypt(password) : "";
+        this.loginForm.rememberMe = rememberMe === "true";
+      }
     },
     handleLogin() {
-      const formRef = this.loginForm.loginType === '1' ? this.$refs.ldapForm : this.$refs.sysForm;
-      formRef.validate(valid => {
+      this.$refs.loginForm.validate(valid => {
         if (!valid) return;
         this.loading = true;
         if (this.loginForm.loginType === "0") {
           if (this.loginForm.rememberMe) {
-            Cookies.set("username", this.loginForm.username, { expires: 30 });
-            Cookies.set("password", encrypt(this.loginForm.password), { expires: 30 });
-            Cookies.set("rememberMe", true, { expires: 30 });
+            Cookies.set("username",   this.loginForm.username,          { expires: 30 });
+            Cookies.set("password",   encrypt(this.loginForm.password), { expires: 30 });
+            Cookies.set("rememberMe", true,                              { expires: 30 });
           } else {
-            Cookies.remove("username"); Cookies.remove("password"); Cookies.remove("rememberMe");
+            Cookies.remove("username");
+            Cookies.remove("password");
+            Cookies.remove("rememberMe");
           }
         }
         this.$store.dispatch("Login", this.loginForm).then(() => {
@@ -337,61 +247,45 @@ export default {
 </script>
 
 <style lang="scss">
-@keyframes lp-in {
-  from { opacity: 0; transform: translateX(16px); }
-  to   { opacity: 1; transform: translateX(0); }
+@keyframes lp-float-a {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%       { transform: translateY(-14px) rotate(3deg); }
 }
-@keyframes lp-illus-float {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(-8px); }
+@keyframes lp-float-b {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%       { transform: translateY(-18px) rotate(-4deg); }
+}
+@keyframes lp-float-c {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%       { transform: translateY(-10px) rotate(5deg); }
+}
+@keyframes lp-card-in {
+  from { opacity: 0; transform: translate(-50%, -46%) scale(0.97); }
+  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 
-/* ══ 根 ══ */
+/* ══ 根容器 ══ */
 .lp-root {
+  position: relative;
   min-height: 100vh;
   display: flex;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-  background: #0f172a;
-}
-
-/* ══ 左侧 ══ */
-.lp-brand {
-  width: 55%;
-  flex-shrink: 0;
-  background: linear-gradient(135deg, #1e3a5f 0%, #162d4a 50%, #0f2035 100%);
-  position: relative;
   overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  @media (max-width: 768px) { display: none; }
-
-  /* 背景大圆装饰 */
-  &::before {
-    content: '';
-    position: absolute;
-    width: 600px; height: 600px;
-    border-radius: 50%;
-    border: 1px solid rgba(255,255,255,0.04);
-    top: -200px; right: -180px;
-  }
-  &::after {
-    content: '';
-    position: absolute;
-    width: 400px; height: 400px;
-    border-radius: 50%;
-    border: 1px solid rgba(255,255,255,0.04);
-    bottom: -150px; left: -100px;
-  }
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: #f5f7fb;
 }
 
-.lp-brand-content {
+/* ══ 左侧内容区 ══ */
+.lp-left {
+  width: 52%;
+  min-height: 100vh;
+  padding: 40px 48px;
+  background: #ffffff;
   position: relative;
   z-index: 1;
-  padding: 48px 52px;
-  width: 100%;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
+  @media (max-width: 768px) { width: 100%; }
 }
 
 /* Logo */
@@ -399,299 +293,323 @@ export default {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 44px;
-  svg { width: 28px; height: 28px; opacity: 0.9; }
-  span {
-    font-size: 15px;
-    font-weight: 500;
-    color: rgba(255,255,255,0.7);
-    letter-spacing: 0.5px;
-  }
-}
-
-/* 主标题 */
-.lp-headline {
   margin-bottom: 36px;
-  h1 {
-    font-size: 36px;
-    font-weight: 800;
-    color: #ffffff;
-    line-height: 1.2;
-    letter-spacing: -0.5px;
-    margin: 0 0 14px;
-  }
-  p {
-    font-size: 13.5px;
-    color: rgba(255,255,255,0.4);
-    line-height: 1.8;
-    margin: 0;
-    max-width: 340px;
-  }
 }
-
-/* 插图 */
-.lp-illus {
-  margin-bottom: 36px;
-  svg {
-    width: 100%;
-    max-width: 440px;
-    animation: lp-illus-float 6s ease-in-out infinite;
-    filter: drop-shadow(0 16px 40px rgba(0,0,0,0.4));
-  }
+.lp-logo-icon {
+  width: 36px; height: 36px;
+  background: #2563eb;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff;
+  svg { width: 18px; height: 18px; }
 }
-
-/* 底部统计 */
-.lp-stats {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  padding: 20px 24px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 12px;
-  backdrop-filter: blur(8px);
-}
-.lp-stat {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-.lp-stat-n {
-  font-size: 22px;
-  font-weight: 700;
-  color: #ffffff;
-  letter-spacing: -0.5px;
-}
-.lp-stat-l {
-  font-size: 11px;
-  color: rgba(255,255,255,0.35);
+.lp-logo-text {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1e293b;
   letter-spacing: 0.5px;
 }
-.lp-stat-div {
-  width: 1px;
-  height: 32px;
-  background: rgba(255,255,255,0.1);
-}
 
-/* ══ 右侧 ══ */
-.lp-panel {
-  flex: 1;
-  background: #ffffff;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  animation: lp-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.lp-panel-inner {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 52px 52px 36px;
-  max-width: 440px;
-  width: 100%;
-  margin: 0 auto;
-}
-
-/* 时钟 */
-.lp-clock {
-  margin-bottom: 36px;
-  padding-bottom: 28px;
-  border-bottom: 1px solid #f1f5f9;
-}
-.lp-clock-time {
-  font-size: 38px;
-  font-weight: 200;
+/* 大标题 */
+.lp-hero-title {
+  font-size: 52px;
+  font-weight: 900;
   color: #0f172a;
-  letter-spacing: 5px;
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-  margin-bottom: 8px;
+  line-height: 1.1;
+  letter-spacing: -1px;
+  margin: 0 0 32px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
 }
-.lp-clock-date {
-  font-size: 12.5px;
+
+/* 装饰点阵 */
+.lp-dots {
+  position: absolute;
+  top: 60px;
+  right: 40px;
+  display: grid;
+  grid-template-columns: repeat(5, 8px);
+  gap: 6px;
+  opacity: 0.35;
+}
+.lp-dot {
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: #94a3b8;
+}
+
+/* 信息区块 */
+.lp-section {
+  margin-bottom: 28px;
+}
+.lp-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 12px;
+  letter-spacing: 0.3px;
+  i { margin-right: 6px; color: #2563eb; }
+}
+.lp-list {
+  list-style: none;
+  padding: 0; margin: 0;
+  li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid #f1f5f9;
+    &:last-child { border-bottom: none; }
+  }
+}
+.lp-list-tag {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 4px;
+  min-width: 48px;
+  text-align: center;
+  &.tag-blue   { background: #eff6ff; color: #2563eb; }
+  &.tag-purple { background: #f5f3ff; color: #7c3aed; }
+  &.tag-green  { background: #f0fdf4; color: #16a34a; }
+  &.tag-orange { background: #fff7ed; color: #ea580c; }
+  &.tag-red    { background: #fef2f2; color: #dc2626; }
+}
+.lp-list-text {
+  flex: 1;
+  font-size: 13px;
+  color: #334155;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lp-list-date {
+  flex-shrink: 0;
+  font-size: 11.5px;
   color: #94a3b8;
+}
+
+/* ══ 右侧蓝色背景 ══ */
+.lp-right {
+  flex: 1;
+  min-height: 100vh;
+  background: linear-gradient(150deg, #2563eb 0%, #1d4ed8 45%, #4f46e5 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* 气泡图标 */
+.lp-bubble {
+  position: absolute;
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  i { font-size: 26px; }
+}
+.lp-bubble1 {
+  width: 70px; height: 70px;
+  background: #7c3aed;
+  top: 18%; left: 20%;
+  animation: lp-float-a 5s ease-in-out infinite;
+}
+.lp-bubble2 {
+  width: 60px; height: 60px;
+  background: #0ea5e9;
+  top: 12%; right: 18%;
+  animation: lp-float-b 6.5s ease-in-out infinite;
+  animation-delay: -2s;
+}
+.lp-bubble3 {
+  width: 56px; height: 56px;
+  background: #10b981;
+  bottom: 28%; left: 14%;
+  animation: lp-float-c 7s ease-in-out infinite;
+  animation-delay: -1s;
+}
+.lp-bubble4 {
+  width: 64px; height: 64px;
+  background: #f59e0b;
+  bottom: 18%; right: 16%;
+  animation: lp-float-a 5.5s ease-in-out infinite;
+  animation-delay: -3s;
+}
+.lp-bubble5 {
+  width: 50px; height: 50px;
+  background: rgba(255,255,255,0.15);
+  border: 1.5px solid rgba(255,255,255,0.3);
+  top: 55%; right: 28%;
+  animation: lp-float-b 8s ease-in-out infinite;
+  animation-delay: -4s;
+}
+
+/* ══ 浮动登录卡片 ══ */
+.lp-card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  width: 360px;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 36px 32px 28px;
+  box-shadow:
+    0 4px 6px rgba(0,0,0,0.05),
+    0 20px 60px rgba(0,0,0,0.2),
+    0 0 0 1px rgba(255,255,255,0.1);
+  animation: lp-card-in 0.5s cubic-bezier(0.22,1,0.36,1) both;
+
+  @media (max-width: 768px) {
+    position: fixed;
+    width: calc(100% - 32px);
+    max-width: 360px;
+    left: 50%; top: 50%;
+  }
+}
+
+.lp-card-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 20px;
   letter-spacing: 0.3px;
 }
 
-/* 标题 */
-.lp-form-title {
-  font-size: 24px;
-  font-weight: 700;
-  color: #0f172a;
-  margin: 0 0 6px;
-  letter-spacing: -0.3px;
-}
-.lp-form-sub {
-  font-size: 13.5px;
-  color: #94a3b8;
-  margin: 0 0 20px;
-}
-
-/* 表单外层边框卡片 */
-.lp-form-card {
-  border: 1.5px solid #e2e8f0;
-  border-radius: 12px;
-  overflow: hidden;
-  background: #fff;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-}
-
-/* Tab 切换 */
-.lp-tabs {
+/* 类型切换 */
+.lp-type-switch {
   display: flex;
-  border-bottom: 1.5px solid #e2e8f0;
-  background: #f8fafc;
+  gap: 0;
+  margin-bottom: 20px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
 }
-.lp-tab {
+.lp-type-btn {
   flex: 1;
-  height: 42px;
+  height: 34px;
   border: none;
   background: transparent;
-  font-size: 13.5px;
-  font-weight: 500;
-  font-family: inherit;
-  cursor: pointer;
+  font-size: 13px;
   color: #94a3b8;
-  position: relative;
-  transition: color 0.18s, background 0.18s;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 500;
+  transition: all 0.18s;
   &:first-child { border-right: 1.5px solid #e2e8f0; }
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: -1.5px; left: 50%; right: 50%;
-    height: 2px;
-    background: #2563eb;
-    transition: left 0.22s ease, right 0.22s ease;
-  }
   &.active {
-    color: #0f172a;
-    background: #ffffff;
-    &::after { left: 0; right: 0; }
+    background: #2563eb;
+    color: #ffffff;
+    border-color: #2563eb;
   }
-  &:hover:not(.active) { color: #475569; background: #f1f5f9; }
+  &:hover:not(.active) { background: #f8fafc; color: #475569; }
 }
 
-/* 表单容器：固定高度 = 系统账号表单高度，两套表单绝对叠放 */
-.lp-form-wrap {
-  position: relative;
-  /* username+password+captcha+remember+button 总高 */
-  height: 330px;
-  padding: 24px;
-}
-
-/* 表单：绝对叠放，opacity + pointer-events 切换 */
+/* 表单 */
 .lp-form {
-  position: absolute;
-  inset: 24px;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.22s ease;
-  &.lp-form-visible {
-    opacity: 1;
-    pointer-events: auto;
-  }
   .el-form-item { margin-bottom: 0; }
-  .el-form-item__error { font-size: 11.5px; padding-top: 3px; color: #f43f5e; }
+  .el-form-item__error { font-size: 11px; padding-top: 2px; }
   .el-input__inner {
-    height: 42px !important;
+    border-top: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-bottom: 1.5px solid #e2e8f0 !important;
     border-radius: 0 !important;
-    border: none !important;
-    border-bottom: 1.5px solid #dde3ef !important;
     background: transparent !important;
-    color: #0f172a !important;
-    font-size: 14px !important;
-    padding: 0 2px !important;
     box-shadow: none !important;
-    transition: border-color 0.18s !important;
-    &:focus {
-      border-bottom-color: #2563eb !important;
-      box-shadow: none !important;
-    }
-    &::placeholder { color: #b0bac6 !important; font-size: 13.5px !important; }
+    height: 42px !important;
+    font-size: 14px !important;
+    color: #0f172a !important;
+    padding-left: 30px !important;
+    transition: border-color 0.15s !important;
+    &:focus { border-bottom-color: #2563eb !important; box-shadow: none !important; }
+    &::placeholder { color: #cbd5e1 !important; }
   }
+  .el-input__prefix { color: #94a3b8; line-height: 42px; }
   .el-input__suffix { line-height: 42px; }
-  .el-input__prefix { display: none; }
 }
-.lp-field {
+.lp-field-wrap {
   display: flex;
   flex-direction: column;
-  gap: 7px;
-  padding-bottom: 18px;
-  label {
-    font-size: 13px;
-    font-weight: 600;
-    color: #374151;
-    letter-spacing: 0.2px;
-  }
+  gap: 4px;
+  padding-bottom: 14px;
+}
+.lp-label {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
 }
 
 /* 验证码 */
-.lp-code-row { display: flex; gap: 10px; align-items: center; }
+.lp-code-row { display: flex; gap: 8px; align-items: flex-end; }
 .lp-captcha {
   position: relative;
-  width: 110px;
-  height: 42px;
+  width: 96px; height: 42px;
   flex-shrink: 0;
-  overflow: hidden;
-  border-bottom: 1.5px solid #dde3ef;
+  border-bottom: 1.5px solid #e2e8f0;
   cursor: pointer;
-  transition: border-color 0.18s;
-  &:hover { border-color: #2563eb; .lp-captcha-mask { opacity: 1; } }
+  overflow: hidden;
+  &:hover .lp-captcha-mask { opacity: 1; }
   img { width: 100%; height: 100%; object-fit: cover; display: block; }
 }
 .lp-captcha-mask {
   position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center;
-  background: rgba(37,99,235,0.55);
+  background: rgba(37,99,235,0.6);
   color: #fff; font-size: 18px;
   opacity: 0; transition: opacity 0.18s;
 }
 
 .lp-remember {
-  margin: -8px 0 14px;
-  .el-checkbox__label { font-size: 13px; color: #94a3b8; }
-  .el-checkbox__inner { border-radius: 4px; border-color: #cbd5e1; }
-  .el-checkbox__input.is-checked .el-checkbox__inner { background: #2563eb; border-color: #2563eb; }
+  margin: -6px 0 12px;
+  .el-checkbox__label { font-size: 12px; color: #94a3b8; }
+  .el-checkbox__inner { border-radius: 3px; border-color: #cbd5e1; }
+  .el-checkbox__input.is-checked .el-checkbox__inner { background-color: #2563eb; border-color: #2563eb; }
 }
 
-/* 按钮 */
-.lp-btn {
+/* 提交按钮 */
+.lp-submit {
   width: 100%;
-  height: 46px;
-  margin-top: 6px;
+  height: 42px;
+  margin-top: 8px;
   font-size: 15px;
   font-weight: 600;
   letter-spacing: 3px;
-  border-radius: 10px !important;
+  border-radius: 8px !important;
   background: #2563eb !important;
-  border: none !important;
-  box-shadow: 0 2px 8px rgba(37,99,235,0.3), 0 1px 2px rgba(0,0,0,0.06) !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 4px 14px rgba(37,99,235,0.35) !important;
   transition: all 0.2s !important;
   &:hover {
     background: #1d4ed8 !important;
-    box-shadow: 0 6px 20px rgba(37,99,235,0.4) !important;
-    transform: translateY(-1px);
+    border-color: #1d4ed8 !important;
+    box-shadow: 0 6px 20px rgba(37,99,235,0.45) !important;
   }
-  &:active { transform: translateY(0); }
 }
 
-.lp-footer {
-  margin-top: 24px;
+.lp-helptext {
   text-align: center;
-  font-size: 12px;
-  color: #c1cbd8;
-  i { margin-right: 5px; }
-}
-
-.lp-copy {
-  padding: 18px 52px;
   font-size: 11.5px;
-  color: #c1cbd8;
+  color: #94a3b8;
+  margin: 16px 0 0;
+}
+
+/* 底部时间栏 */
+.lp-clock-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+  padding-top: 14px;
   border-top: 1px solid #f1f5f9;
-  text-align: center;
+  font-size: 11.5px;
+  color: #cbd5e1;
+}
+.lp-clock-time {
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  color: #94a3b8;
 }
 </style>
