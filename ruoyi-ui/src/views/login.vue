@@ -72,8 +72,9 @@
       </div>
     </div>
 
-    <!-- ══ 浮动登录卡片 ══ -->
+    <!-- ══ 登录卡片（右侧蓝色区内居中） ══ -->
     <div class="lp-card">
+      <div class="lp-card-inner">
       <h2 class="lp-card-title">账号登录</h2>
 
       <!-- 类型切换 -->
@@ -132,6 +133,7 @@
         <span>{{ currentDate }}</span>
         <span class="lp-clock-time">{{ currentTime }}</span>
       </div>
+      </div><!-- /.lp-card-inner -->
     </div>
 
   </div>
@@ -278,7 +280,7 @@ export default {
 .lp-left {
   width: 52%;
   min-height: 100vh;
-  padding: 40px 48px;
+  padding: 40px 60px 40px 120px;
   background: #ffffff;
   position: relative;
   z-index: 1;
@@ -445,28 +447,41 @@ export default {
   animation-delay: -4s;
 }
 
-/* ══ 浮动登录卡片 ══ */
+/* ══ 登录卡片：固定在右侧蓝色区域内垂直居中 ══ */
 .lp-card {
   position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 48%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   z-index: 10;
-  width: 360px;
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 36px 32px 28px;
-  box-shadow:
-    0 4px 6px rgba(0,0,0,0.05),
-    0 20px 60px rgba(0,0,0,0.2),
-    0 0 0 1px rgba(255,255,255,0.1);
-  animation: lp-card-in 0.5s cubic-bezier(0.22,1,0.36,1) both;
+  pointer-events: none;
+
+  /* 实际卡片用伪元素承载，内容用子元素 */
+  &::before { display: none; }
+
+  > * { pointer-events: auto; }
+
+  /* 内层白卡 */
+  .lp-card-inner {
+    width: 340px;
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 36px 32px 28px;
+    box-shadow:
+      0 4px 6px rgba(0,0,0,0.05),
+      0 20px 60px rgba(0,0,0,0.25),
+      0 0 0 1px rgba(255,255,255,0.1);
+    animation: lp-card-in 0.5s cubic-bezier(0.22,1,0.36,1) both;
+  }
 
   @media (max-width: 768px) {
     position: fixed;
-    width: calc(100% - 32px);
-    max-width: 360px;
-    left: 50%; top: 50%;
+    width: 100%;
+    right: auto; left: 0;
   }
 }
 
