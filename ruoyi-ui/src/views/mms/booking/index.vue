@@ -44,13 +44,16 @@
             :rules="[{required:true,message:'请选择园区',trigger:'change'}]">
             <div class="bk-campus-btns">
               <button
-                v-for="c in campuses" :key="c"
+                v-for="c in campuses" :key="c.name"
                 type="button"
-                :class="['bk-campus-btn', booking.campus === c ? 'active' : '']"
-                @click="booking.campus = c"
+                :class="['bk-campus-btn', booking.campus === c.name ? 'active' : '']"
+                @click="booking.campus = c.name"
               >
-                <span class="bk-campus-icon-wrap"><i class="el-icon-location"></i></span>
-                <span class="bk-campus-name">{{ c }}</span>
+                <i v-if="booking.campus === c.name" class="el-icon-check bk-campus-check"></i>
+                <span class="bk-campus-icon-wrap"><i :class="c.icon"></i></span>
+                <span class="bk-campus-name">{{ c.name }}</span>
+                <span class="bk-campus-sub">{{ c.desc }}</span>
+                <span class="bk-campus-rooms">{{ c.rooms }} 间会议室</span>
               </button>
             </div>
           </el-form-item>
@@ -434,7 +437,11 @@ export default {
     return {
       step: 1,
       meetingType: '0',
-      campuses: ['1园', '2园', '3园'],
+      campuses: [
+        { name: '1园', desc: '综合楼 A/B 区', rooms: 4, icon: 'el-icon-office-building' },
+        { name: '2园', desc: '研发中心', rooms: 3, icon: 'el-icon-monitor' },
+        { name: '3园', desc: '行政楼', rooms: 2, icon: 'el-icon-s-home' },
+      ],
       categories: ['生产', '周边', '研发', '业务'],
       frequencies: ['单次', '日报', '周报', '双周报', '月报'],
       displayHours: Array.from({ length: END_HOUR - START_HOUR + 1 }, (_, i) => START_HOUR + i),
@@ -1003,40 +1010,53 @@ export default {
 .bk-mode-btn.active { border-color:#1a56db; background:#e1eafe; color:#1a56db; font-weight:600; }
 
 /* ── 园区选择按钮 ── */
-.bk-campus-btns { display: flex; gap: 10px; }
 .bk-campus-btns { display: flex; gap: 12px; }
 .bk-campus-btn {
-  flex: 1; padding: 18px 10px 14px; border-radius: 14px;
-  border: 1.5px solid #e5e7eb; background: #fff; cursor: pointer; color: #6b7280;
-  transition: all .18s ease; display: flex; flex-direction: column; align-items: center; gap: 6px;
-  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  position: relative;
+  flex: 1; padding: 16px 10px 14px; border-radius: 12px;
+  border: 1.5px solid #e5e7eb; background: #fff; cursor: pointer;
+  transition: all .18s ease; display: flex; flex-direction: column; align-items: center; gap: 5px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05);
   outline: none;
 }
+.bk-campus-check {
+  position: absolute; top: 8px; right: 8px;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: #2563eb; color: #fff;
+  font-size: 11px; display: flex; align-items: center; justify-content: center;
+}
 .bk-campus-icon-wrap {
-  width: 44px; height: 44px; border-radius: 50%; background: #f3f4f6;
+  width: 42px; height: 42px; border-radius: 10px; background: #f3f4f6;
   display: flex; align-items: center; justify-content: center;
   transition: all .18s ease;
-  i { font-size: 22px; color: #9ca3af; transition: all .18s ease; }
+  i { font-size: 20px; color: #9ca3af; transition: all .18s ease; }
 }
 .bk-campus-name {
-  font-size: 15px; font-weight: 600; color: #374151; letter-spacing: .5px;
+  font-size: 15px; font-weight: 700; color: #374151; letter-spacing: .5px;
   transition: color .18s;
 }
 .bk-campus-sub {
-  font-size: 11px; color: #c0c4cc; transition: color .18s;
+  font-size: 11px; color: #9ca3af; transition: color .18s;
+}
+.bk-campus-rooms {
+  font-size: 11px; color: #c0c4cc;
+  background: #f9fafb; border-radius: 4px; padding: 1px 6px;
+  transition: all .18s;
 }
 .bk-campus-btn:hover {
   border-color: #93c5fd; box-shadow: 0 4px 12px rgba(37,99,235,.1);
   .bk-campus-icon-wrap { background: #dbeafe; i { color: #2563eb; } }
   .bk-campus-name { color: #1d4ed8; }
-  .bk-campus-sub { color: #93c5fd; }
+  .bk-campus-sub { color: #60a5fa; }
+  .bk-campus-rooms { background: #eff6ff; color: #60a5fa; }
 }
 .bk-campus-btn.active {
   border-color: #2563eb; background: #eff6ff;
-  box-shadow: 0 4px 14px rgba(37,99,235,.18);
-  .bk-campus-icon-wrap { background: #2563eb; i { color: #fff; } }
+  box-shadow: 0 4px 14px rgba(37,99,235,.15);
+  .bk-campus-icon-wrap { background: #2563eb; border-radius: 10px; i { color: #fff; } }
   .bk-campus-name { color: #1e40af; }
-  .bk-campus-sub { color: #60a5fa; }
+  .bk-campus-sub { color: #3b82f6; }
+  .bk-campus-rooms { background: #dbeafe; color: #2563eb; }
 }
 
 /* ── 工具栏 ── */
