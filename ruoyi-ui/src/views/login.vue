@@ -424,9 +424,6 @@ export default {
   align-items: center;
   justify-content: center;
   padding: 0 60px 0 0;
-  /* 六边形纹理 */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='100'%3E%3Cpath d='M28 2 L54 17 L54 47 L28 62 L2 47 L2 17 Z' fill='none' stroke='%23c5d0f0' stroke-width='0.8'/%3E%3Cpath d='M28 62 L54 77 L54 107 L28 122 L2 107 L2 77 Z' fill='none' stroke='%23c5d0f0' stroke-width='0.8'/%3E%3C/svg%3E");
-  background-size: 56px 100px;
 }
 
 .lp-panel-inner {
